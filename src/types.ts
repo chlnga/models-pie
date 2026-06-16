@@ -26,6 +26,10 @@ export interface JoinedModel {
   reasoningType: string | null;
   overallScore: number | null;
   categories: Partial<Record<CategoryKey, number | null>>;
+  rankingEligible: boolean;
+  categoryRankingEligible: Partial<Record<CategoryKey, boolean>>;
+  trustedBenchmarkCount: number | null;
+  scoreConfidence: number | null;
   inputPrice: number | null;
   outputPrice: number | null;
   isFreePricing: boolean;
@@ -63,6 +67,8 @@ export interface RankedModel extends JoinedModel {
   cheapPct: number | null;
   fastPct: number | null;
   composite: number;
+  lowConfidence: boolean;
+  confidenceTag: string | null;
 }
 
 export interface RankResult {

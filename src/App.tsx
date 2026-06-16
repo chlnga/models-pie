@@ -83,7 +83,8 @@ export default function App() {
         <p className="muted">
           Composite scores use percentile-ranking (100 = best within the eligible
           set), blended from your weights. Blended cost uses an 8:1 input:output
-          ratio per million tokens. Data:{' '}
+          ratio per million tokens. Faded rows mark quality scores BenchLM
+          excludes from its leaderboards (sparse or unranked evidence). Data:{' '}
           {datasetMeta.canonicalUrl ? (
             <a href={datasetMeta.canonicalUrl} target="_blank" rel="noreferrer noopener">
               {datasetMeta.qualityProvider}

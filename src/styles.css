@@ -521,6 +521,9 @@ a:hover {
 .table tbody tr:last-child td {
   border-bottom: 0;
 }
+.table tbody tr.is-low-confidence {
+  opacity: 0.5;
+}
 
 .col-rank { width: 44px; text-align: center; }
 .col-good, .col-cheap, .col-fast { width: 170px; }
@@ -569,6 +572,7 @@ a:hover {
 }
 .tag--free { background: var(--cheap-soft); color: oklch(42% 0.12 80); }
 .tag--open { background: var(--good-soft); color: oklch(40% 0.12 157); }
+.tag--lowconf { background: oklch(94% 0.015 280); color: oklch(46% 0.04 280); }
 
 .metric {
   display: flex;

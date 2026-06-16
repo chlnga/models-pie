@@ -23,6 +23,21 @@ export function qualityRaw(model: JoinedModel, metric: QualityMetric): number | 
   return model.categories[metric] ?? null;
 }
 
+function isQualityConfident(model: JoinedModel, metric: QualityMetric): boolean {
+  return metric === 'overall'
+    ? model.rankingEligible
+    : (model.categoryRankingEligible[metric] ?? false);
+}
+
+function confidenceTagFor(model: JoinedModel): string {
+  const sparse = model.scoreConfidence === 1 || (model.trustedBenchmarkCount ?? 99) <= 1;
+  if (!sparse) return 'not BenchLM-ranked';
+  const trusted = model.trustedBenchmarkCount;
+  if (trusted === 0) return 'low confidence · no trusted benchmarks';
+  if (trusted === 1) return 'low confidence · 1 trusted benchmark';
+  return 'low confidence';
+}
+
 export function speedDataPresent(
   model: JoinedModel,
   metric: SpeedMetric,
@@ -33,7 +48,7 @@ export function speedDataPresent(
 }
 
 // Percentile-rank onto 0..100 (100 = best). Robust to skewed distributions such
-// as pricing ($0..hundreds); ties share an average rank.
+// as pricing ($0..hundreds); ties share the best (highest) rank.
 function percentileRank(
   entries: { key: string; value: number }[],
   higherIsBetter: boolean,
@@ -155,6 +170,8 @@ export function rank(models: JoinedModel[], cfg: RankConfig): RankResult {
     if (weights.cheap > 0 && cheapPctVal != null) composite += weights.cheap * cheapPctVal;
     if (weights.fast > 0 && fastPctVal != null) composite += weights.fast * fastPctVal;
 
+    const lowConfidence = weights.good > 0 && !isQualityConfident(m, cfg.qualityMetric);
+
     return {
       ...m,
       qualityRaw: qualityRaw(m, cfg.qualityMetric),
@@ -165,10 +182,17 @@ export function rank(models: JoinedModel[], cfg: RankConfig): RankResult {
       cheapPct: cheapPctVal,
       fastPct: fastPctVal,
       composite,
+      lowConfidence,
+      confidenceTag: lowConfidence ? confidenceTagFor(m) : null,
     };
   });
 
-  ranked.sort((a, b) => b.composite - a.composite || (b.qualityRaw ?? -1) - (a.qualityRaw ?? -1));
+  ranked.sort(
+    (a, b) =>
+      b.composite - a.composite ||
+      (b.qualityRaw ?? -1) - (a.qualityRaw ?? -1) ||
+      (b.overallScore ?? -1) - (a.overallScore ?? -1),
+  );
 
   return {
     ranked,

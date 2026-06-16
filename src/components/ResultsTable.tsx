@@ -112,7 +112,7 @@ export default function ResultsTable({
             </thead>
             <tbody>
               {ranked.map((m, i) => (
-                <tr key={m.key}>
+                <tr key={m.key} className={m.lowConfidence ? 'is-low-confidence' : undefined}>
                   <td data-label="Rank" className="col-rank">
                     <span className="rank">{i + 1}</span>
                   </td>
@@ -133,6 +133,14 @@ export default function ResultsTable({
                         {m.isFreePricing && <span className="tag tag--free">Free</span>}
                         {m.sourceType?.toLowerCase().includes('open') && (
                           <span className="tag tag--open">Open weight</span>
+                        )}
+                        {m.confidenceTag && (
+                          <span
+                            className="tag tag--lowconf"
+                            title="This quality score is not on BenchLM's leaderboard for this metric"
+                          >
+                            {m.confidenceTag}
+                          </span>
                         )}
                       </span>
                     </div>

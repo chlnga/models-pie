@@ -41,6 +41,14 @@ interface RawModelItem {
     overallScore?: number | null;
     displayCategoryScores?: Record<string, number | null> | null;
   } | null;
+  ranking?: {
+    rankingEligible?: boolean | null;
+    categoryRankingEligible?: Record<string, boolean | null> | null;
+  } | null;
+  coverage?: {
+    trustedBenchmarkCount?: number | null;
+    scoreConfidence?: number | null;
+  } | null;
 }
 
 interface RawOpenRouterItem {
@@ -91,6 +99,11 @@ function toModel(item: RawModelItem): JoinedModel {
   for (const key of CATEGORY_KEYS) {
     if (key in cats) categories[key] = num(cats[key]);
   }
+  const rawCatElig = item.ranking?.categoryRankingEligible ?? {};
+  const categoryRankingEligible: Partial<Record<CategoryKey, boolean>> = {};
+  for (const key of CATEGORY_KEYS) {
+    if (key in rawCatElig) categoryRankingEligible[key] = rawCatElig[key] === true;
+  }
   return {
     key: str(item.canonicalModelKey) ?? 'unknown',
     name: str(item.model) ?? str(item.canonicalModelKey) ?? 'Unknown',
@@ -101,6 +114,10 @@ function toModel(item: RawModelItem): JoinedModel {
     reasoningType: str(item.reasoningType),
     overallScore: num(item.scores?.overallScore),
     categories,
+    rankingEligible: item.ranking?.rankingEligible === true,
+    categoryRankingEligible,
+    trustedBenchmarkCount: num(item.coverage?.trustedBenchmarkCount),
+    scoreConfidence: num(item.coverage?.scoreConfidence),
     inputPrice: null,
     outputPrice: null,
     isFreePricing: false,
