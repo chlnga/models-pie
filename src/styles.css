@@ -126,7 +126,7 @@ a:hover {
   font-weight: 600;
 }
 .header__subtitle em:nth-of-type(1) { color: var(--fast); }
-.header__subtitle em:nth-of-type(2) { color: color-mix(in oklch, var(--cheap) 70%, var(--text-strong)); }
+.header__subtitle em:nth-of-type(2) { color: color-mix(in oklch, var(--cheap) 85%, var(--text-strong)); }
 .header__subtitle em:nth-of-type(3) { color: var(--good); }
 
 .header__data {
