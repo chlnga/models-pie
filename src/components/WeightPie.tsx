@@ -13,8 +13,7 @@ const SIZE = 240;
 const CX = 120;
 const CY = 120;
 const R_OUTER = 108;
-const R_INNER = 66;
-const R_MID = (R_OUTER + R_INNER) / 2;
+const R_MID = 70;
 const HANDLE_R = 12;
 const FAN = 9;
 
@@ -29,19 +28,16 @@ function polar(r: number, thetaDeg: number): { x: number; y: number } {
   return { x: CX + r * Math.sin(t), y: CY - r * Math.cos(t) };
 }
 
-function annularPath(theta0: number, theta1: number): string {
+function piePath(theta0: number, theta1: number): string {
   const span = Math.min(theta1 - theta0, 359.999);
   const a1 = theta0 + span;
-  const o0 = polar(R_OUTER, theta0);
-  const o1 = polar(R_OUTER, a1);
-  const i1 = polar(R_INNER, a1);
-  const i0 = polar(R_INNER, theta0);
+  const p0 = polar(R_OUTER, theta0);
+  const p1 = polar(R_OUTER, a1);
   const large = span > 180 ? 1 : 0;
   return [
-    `M ${o0.x.toFixed(2)} ${o0.y.toFixed(2)}`,
-    `A ${R_OUTER} ${R_OUTER} 0 ${large} 1 ${o1.x.toFixed(2)} ${o1.y.toFixed(2)}`,
-    `L ${i1.x.toFixed(2)} ${i1.y.toFixed(2)}`,
-    `A ${R_INNER} ${R_INNER} 0 ${large} 0 ${i0.x.toFixed(2)} ${i0.y.toFixed(2)}`,
+    `M ${CX} ${CY}`,
+    `L ${p0.x.toFixed(2)} ${p0.y.toFixed(2)}`,
+    `A ${R_OUTER} ${R_OUTER} 0 ${large} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
     'Z',
   ].join(' ');
 }
@@ -216,13 +212,13 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
             className={`pie__slice pie__slice--${s.key}`}
             cx={CX}
             cy={CY}
-            r={R_MID}
+            r={R_OUTER}
           />
         ) : (
           <path
             key={s.key}
             className={`pie__slice pie__slice--${s.key}`}
-            d={annularPath(s.t0, s.t1)}
+            d={piePath(s.t0, s.t1)}
             strokeWidth={0}
           />
         ),
@@ -264,12 +260,6 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
         onKeyDown={onKeyDown('cheapFast')}
       />
 
-      <text className="pie__hint" x={CX} y={CY - 2} textAnchor="middle" aria-hidden="true">
-        drag the
-      </text>
-      <text className="pie__hint" x={CX} y={CY + 14} textAnchor="middle" aria-hidden="true">
-        edges
-      </text>
     </svg>
   );
 }
