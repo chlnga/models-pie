@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import WeightControls from './components/WeightControls';
+import WeightPie from './components/WeightPie';
 import MetricSelectors from './components/MetricSelectors';
 import ResultsTable from './components/ResultsTable';
 import { joinedModels, datasetMeta } from './data';
@@ -14,6 +15,45 @@ export default function App() {
   const [speedMetric, setSpeedMetric] = useState<SpeedMetric>('blend');
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState<number>(50);
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const pieWrapRef = useRef<HTMLDivElement>(null);
+  const prevRectRef = useRef<DOMRect | null>(null);
+  const [docked, setDocked] = useState(false);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    const update = () => setDocked(panel.getBoundingClientRect().top < 16);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = pieWrapRef.current;
+    if (!el) return;
+    el.style.transition = 'none';
+    el.style.transform = '';
+    el.style.transformOrigin = 'top left';
+    const last = el.getBoundingClientRect();
+    const first = prevRectRef.current;
+    if (first) {
+      const dx = first.left - last.left;
+      const dy = first.top - last.top;
+      const sx = first.width / last.width;
+      const sy = first.height / last.height;
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+      el.getBoundingClientRect();
+      el.style.transition = 'transform .34s cubic-bezier(.2,.7,.2,1)';
+      el.style.transform = '';
+    }
+    prevRectRef.current = last;
+  }, [docked]);
 
   const result = useMemo(
     () => rank(joinedModels, { ...weights, qualityMetric, speedMetric }),
@@ -57,7 +97,13 @@ export default function App() {
       </header>
 
       <main className="container">
-        <WeightControls weights={weights} onWeightsChange={setWeights} />
+        <div ref={panelRef}>
+          <WeightControls>
+            <div ref={pieWrapRef} className={`pie-wrap${docked ? ' is-docked' : ''}`}>
+              <WeightPie weights={weights} onWeightsChange={setWeights} />
+            </div>
+          </WeightControls>
+        </div>
         <MetricSelectors
           qualityMetric={qualityMetric}
           speedMetric={speedMetric}
