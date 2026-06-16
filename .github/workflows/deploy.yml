@@ -1,0 +1,72 @@
+name: Deploy to GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch latest data
+        run: |
+          set -euo pipefail
+          fetch() {
+            url="$1"; out="$2"; key="$3"
+            for attempt in 1 2 3; do
+              if curl -fsSL --retry 3 --retry-delay 5 -H "User-Agent: which-model-ci" -o "$out" "$url"; then
+                if jq -e "$key" "$out" >/dev/null; then
+                  echo "  ok  $out -> $(jq "$key|length" "$out") entries, $(wc -c < "$out") bytes"
+                  return 0
+                fi
+              fi
+              echo "  attempt $attempt failed for $out"
+              sleep 5
+            done
+            echo "ERROR: failed to fetch $url -> $out"
+            exit 1
+          }
+          fetch https://benchlm.ai/data/models.json models.json '.items'
+          fetch https://benchlm.ai/data/pricing.json pricing.json '.items'
+          fetch https://benchlm.ai/data/speed.json speed.json '.items'
+          fetch https://openrouter.ai/api/v1/models openrouter-models.json '.data'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
