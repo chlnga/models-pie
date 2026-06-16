@@ -1,26 +1,29 @@
 :root {
-  --bg: oklch(98.5% 0.004 264);
-  --bg-grad: oklch(96% 0.012 264);
+  --bg: oklch(100% 0 0);
   --surface: oklch(100% 0 0);
-  --surface-2: oklch(97.5% 0.005 264);
-  --text: oklch(22% 0.02 264);
-  --text-strong: oklch(15% 0.02 264);
-  --muted: oklch(52% 0.02 264);
-  --border: oklch(92% 0.008 264);
-  --border-strong: oklch(86% 0.012 264);
+  --surface-2: oklch(97.5% 0 0);
+  --text: oklch(23% 0 0);
+  --text-strong: oklch(14% 0 0);
+  --muted: oklch(47% 0 0);
+  --border: oklch(91% 0 0);
+  --border-strong: oklch(83% 0 0);
 
-  --good: oklch(62% 0.15 157);
+  --good: oklch(64% 0.18 150);
   --good-soft: oklch(95% 0.04 157);
-  --cheap: oklch(72% 0.15 80);
-  --cheap-soft: oklch(95% 0.05 80);
-  --fast: oklch(60% 0.16 256);
-  --fast-soft: oklch(94% 0.04 256);
-  --accent: oklch(56% 0.21 295);
+  --cheap: oklch(72% 0.17 60);
+  --cheap-soft: oklch(95% 0.05 68);
+  --fast: oklch(60% 0.20 250);
+  --fast-soft: oklch(94% 0.05 255);
 
-  --radius: 16px;
+  /* Zero-chroma ink: links/focus/active carry no hue, so the good/cheap/fast
+     trio is the only colour in the UI. Don't restore a coloured accent. */
+  --accent: oklch(20% 0 0);
+
+  --ring: 0 0 0 3px color-mix(in oklch, var(--accent) 22%, transparent);
+  --radius: 14px;
   --radius-sm: 10px;
-  --shadow: 0 1px 2px oklch(20% 0.02 264 / 0.04), 0 8px 24px oklch(20% 0.02 264 / 0.05);
-  --shadow-sm: 0 1px 2px oklch(20% 0.02 264 / 0.05);
+  --shadow: 0 1px 2px oklch(20% 0 0 / 0.05);
+  --shadow-sm: 0 1px 1px oklch(20% 0 0 / 0.04);
 
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -40,9 +43,7 @@ body {
   margin: 0;
   font-family: var(--font);
   color: var(--text);
-  background:
-    radial-gradient(1200px 600px at 80% -10%, var(--bg-grad), transparent 60%),
-    var(--bg);
+  background: var(--bg);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -72,7 +73,7 @@ a:hover {
 }
 
 .header {
-  background: linear-gradient(180deg, var(--surface), oklch(99% 0.004 264));
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -98,13 +99,23 @@ a:hover {
 }
 
 .header__logo {
-  font-size: 1.9rem;
-  line-height: 1;
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  background: conic-gradient(
+    var(--good) 0 33.33%,
+    var(--cheap) 33.33% 66.66%,
+    var(--fast) 66.66% 100%
+  );
+  box-shadow: inset 0 0 0 1px oklch(20% 0 0 / 0.1);
 }
 
 .header__title {
-  font-size: 1.4rem;
-  font-weight: 800;
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-strong);
 }
@@ -164,10 +175,11 @@ a:hover {
 }
 
 .panel__title {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--muted);
 }
 
@@ -196,7 +208,7 @@ a:hover {
 .pie__label-pct {
   fill: #fff;
   paint-order: stroke;
-  stroke: oklch(20% 0.02 264 / 0.3);
+  stroke: oklch(20% 0 0 / 0.3);
   stroke-width: 3px;
   stroke-linejoin: round;
   font-weight: 700;
@@ -243,10 +255,10 @@ a:hover {
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .chip:hover {
   border-color: var(--accent);
@@ -293,7 +305,7 @@ a:hover {
 .selector__select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px oklch(56% 0.21 295 / 0.15);
+  box-shadow: var(--ring);
 }
 
 .dot {
@@ -333,22 +345,22 @@ a:hover {
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   width: 240px;
   max-width: 50vw;
 }
 .results__search:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px oklch(56% 0.21 295 / 0.15);
+  box-shadow: var(--ring);
 }
 
 .segmented {
   display: inline-flex;
   background: var(--surface-2);
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   padding: 3px;
 }
 .segmented__btn {
@@ -358,7 +370,7 @@ a:hover {
   color: var(--muted);
   background: transparent;
   border: 0;
-  border-radius: 999px;
+  border-radius: 7px;
   padding: 6px 12px;
   cursor: pointer;
 }
@@ -382,10 +394,11 @@ a:hover {
 
 .table thead th {
   text-align: left;
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--muted);
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-strong);
@@ -437,7 +450,7 @@ a:hover {
   color: var(--text-strong);
 }
 .table tbody tr:nth-child(1) .rank { background: oklch(90% 0.14 84); color: oklch(30% 0.1 70); }
-.table tbody tr:nth-child(2) .rank { background: oklch(92% 0.03 264); }
+.table tbody tr:nth-child(2) .rank { background: oklch(93% 0 0); }
 .table tbody tr:nth-child(3) .rank { background: oklch(90% 0.06 70); }
 
 .model__name {
@@ -463,9 +476,9 @@ a:hover {
   padding: 2px 7px;
   border-radius: 999px;
 }
-.tag--free { background: var(--cheap-soft); color: oklch(42% 0.12 80); }
-.tag--open { background: var(--good-soft); color: oklch(40% 0.12 157); }
-.tag--lowconf { background: oklch(94% 0.015 280); color: oklch(46% 0.04 280); }
+.tag--free { background: var(--cheap-soft); color: color-mix(in oklch, var(--cheap) 55%, var(--text-strong)); }
+.tag--open { background: var(--good-soft); color: color-mix(in oklch, var(--good) 55%, var(--text-strong)); }
+.tag--lowconf { background: color-mix(in oklch, oklch(55% 0.04 280) 16%, var(--surface)); color: color-mix(in oklch, oklch(55% 0.06 280) 55%, var(--text-strong)); }
 
 .metric {
   display: flex;
@@ -500,13 +513,13 @@ a:hover {
   border: 1px solid var(--border);
 }
 .match[data-tier='high'] {
-  background: oklch(94% 0.05 157);
-  border-color: oklch(80% 0.13 157);
-  color: oklch(33% 0.13 157);
+  background: color-mix(in oklch, var(--good) 20%, var(--surface));
+  border-color: color-mix(in oklch, var(--good) 50%, var(--border-strong));
+  color: color-mix(in oklch, var(--good) 70%, var(--text-strong));
 }
 .match[data-tier='mid'] {
-  background: oklch(95% 0.04 84);
-  border-color: oklch(85% 0.09 80);
+  background: color-mix(in oklch, var(--cheap) 20%, var(--surface));
+  border-color: color-mix(in oklch, var(--cheap) 50%, var(--border-strong));
 }
 .match[data-tier='low'] {
   color: var(--muted);
@@ -617,7 +630,7 @@ a:hover {
   }
   .col-rank .rank {
     background: var(--accent);
-    color: white;
+    color: var(--surface);
   }
   .col-model {
     display: block !important;
@@ -649,4 +662,32 @@ a:hover {
   .header__title {
     font-size: 1.2rem;
   }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(16% 0 0);
+    --surface: oklch(19% 0 0);
+    --surface-2: oklch(24% 0 0);
+    --text: oklch(87% 0 0);
+    --text-strong: oklch(96% 0 0);
+    --muted: oklch(66% 0 0);
+    --border: oklch(30% 0 0);
+    --border-strong: oklch(40% 0 0);
+
+    --good: oklch(64% 0.18 150);
+    --good-soft: oklch(28% 0.05 157);
+    --cheap: oklch(72% 0.17 60);
+    --cheap-soft: oklch(28% 0.06 68);
+    --fast: oklch(60% 0.20 250);
+    --fast-soft: oklch(28% 0.06 255);
+
+    --accent: oklch(92% 0 0);
+    --shadow: 0 1px 2px oklch(0 0 0 / 0.4);
+    --shadow-sm: 0 1px 1px oklch(0 0 0 / 0.3);
+  }
+
+  .table tbody tr:nth-child(1) .rank { background: oklch(38% 0.09 84); color: oklch(82% 0.1 84); }
+  .table tbody tr:nth-child(2) .rank { background: oklch(30% 0 0); color: oklch(80% 0 0); }
+  .table tbody tr:nth-child(3) .rank { background: oklch(34% 0.05 70); color: oklch(80% 0.06 70); }
 }

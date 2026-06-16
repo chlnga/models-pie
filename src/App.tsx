@@ -37,7 +37,7 @@ export default function App() {
       <header className="header">
         <div className="header__inner">
           <div className="header__brand">
-            <span className="header__logo" aria-hidden="true">⚖️</span>
+            <span className="header__logo" aria-hidden="true" />
             <div>
               <h1 className="header__title">Which model?</h1>
               <p className="header__subtitle">
@@ -47,12 +47,11 @@ export default function App() {
             </div>
           </div>
           <p className="header__data muted">
-            {datasetMeta.qualityProvider} quality
+            {datasetMeta.qualityProvider}
             {' · '}
-            pricing via {datasetMeta.pricingProvider}
-            {datasetMeta.sourceLastUpdated && ` · updated ${datasetMeta.sourceLastUpdated}`}
+            {datasetMeta.pricingProvider}
             {' · '}
-            speed via {datasetMeta.speedProvider}
+            {datasetMeta.speedProvider}
           </p>
         </div>
       </header>
