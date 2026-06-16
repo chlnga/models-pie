@@ -93,6 +93,7 @@ function PieHandle({
 export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [active, setActive] = useState<Divider | null>(null);
+  const [hint, setHint] = useState(true);
   const drag = useRef<DragState | null>(null);
 
   const g = weights.good;
@@ -204,6 +205,8 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
     { key: 'fast' as Dimension, t0: thetaCf, t1: 360, pct: f, mid: (thetaCf + 360) / 2 },
   ];
 
+  const firstHandlePos = polar(R_MID, dispGc);
+
   return (
     <svg
       ref={svgRef}
@@ -211,6 +214,8 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       role="group"
       aria-label="Priority pie. Drag the handles between slices to set the good, cheap, and fast weights."
+      onMouseEnter={() => setHint(false)}
+      onTouchStart={() => setHint(false)}
     >
       {slices.map((s) =>
         s.pct >= 99.999 ? (
@@ -247,7 +252,7 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
       })}
 
       <PieHandle
-        pos={polar(R_MID, dispGc)}
+        pos={firstHandlePos}
         active={active === 'goodCheap'}
         label={`Divider between good and cheap. Good ${Math.round(g)} percent.`}
         valuenow={Math.round(g)}
@@ -263,6 +268,16 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
         onKeyDown={onKeyDown('cheapFast')}
       />
 
+      {hint && (
+        <g
+          className="pie__hint"
+          transform={`translate(${firstHandlePos.x.toFixed(2)} ${(firstHandlePos.y - 26).toFixed(2)})`}
+          aria-hidden="true"
+        >
+          <rect className="pie__hint-box" x={-58} y={-13} width={116} height={26} rx={7} />
+          <text className="pie__hint-text" x={0} y={4} textAnchor="middle">Drag to adjust</text>
+        </g>
+      )}
     </svg>
   );
 }

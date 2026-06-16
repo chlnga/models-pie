@@ -19,12 +19,22 @@ export default function App() {
   const panelRef = useRef<HTMLDivElement>(null);
   const pieWrapRef = useRef<HTMLDivElement>(null);
   const prevRectRef = useRef<DOMRect | null>(null);
+  const dockedRef = useRef(false);
   const [docked, setDocked] = useState(false);
 
   useEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
-    const update = () => setDocked(panel.getBoundingClientRect().top < 16);
+    // Capture the pre-flip rect at the flip boundary — viewport-relative rects
+    // go stale under scroll, so a mount-time value would throw the FLIP off.
+    const update = () => {
+      const shouldDock = panel.getBoundingClientRect().top < -100;
+      if (shouldDock === dockedRef.current) return;
+      const el = pieWrapRef.current;
+      if (el) prevRectRef.current = el.getBoundingClientRect();
+      dockedRef.current = shouldDock;
+      setDocked(shouldDock);
+    };
     update();
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
