@@ -39,6 +39,8 @@ export interface DatasetMeta {
   generatedAt: string | null;
   sourceLastUpdated: string | null;
   qualityProvider: string | null;
+  pricingProvider: string | null;
+  pricingProviderUrl: string | null;
   speedProvider: string | null;
   speedProviderUrl: string | null;
   canonicalUrl: string | null;

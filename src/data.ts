@@ -7,7 +7,7 @@ import type {
 // Imported as ?raw strings so TypeScript does not infer a literal type over the
 // ~28k-line models.json (which would slow tsc) and we own the schema instead.
 import modelsJson from '../models.json?raw';
-import pricingJson from '../pricing.json?raw';
+import openrouterJson from '../openrouter-models.json?raw';
 import speedJson from '../speed.json?raw';
 
 const CATEGORY_KEYS: CategoryKey[] = [
@@ -43,13 +43,13 @@ interface RawModelItem {
   } | null;
 }
 
-interface RawPricingItem {
-  canonicalModelKey?: string | null;
-  inputPrice?: number | null;
-  outputPrice?: number | null;
-  hasNumericPricing?: boolean | null;
-  isFreePricing?: boolean | null;
-  note?: string | null;
+interface RawOpenRouterItem {
+  id?: string | null;
+  name?: string | null;
+  pricing?: {
+    prompt?: string | null;
+    completion?: string | null;
+  } | null;
 }
 
 interface RawSpeedItem {
@@ -67,6 +67,23 @@ const str = (v: unknown): string | null =>
 function parseEnvelope<T>(raw: string): RawEnvelope<T> {
   return JSON.parse(raw) as RawEnvelope<T>;
 }
+
+const normalizeName = (s: string): string =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+const stripOrgPrefix = (name: string): string => {
+  const idx = name.indexOf(': ');
+  return idx >= 0 ? name.slice(idx + 2) : name;
+};
+
+// OpenRouter prices are dollars per single token; the rest of the app works in
+// dollars per million tokens, so multiply by 1e6. "-1"/missing => no price.
+const tokenPriceToPerM = (v: unknown): number | null => {
+  if (typeof v !== 'string') return null;
+  const parsed = Number(v);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return parsed * 1_000_000;
+};
 
 function toModel(item: RawModelItem): JoinedModel {
   const cats = item.scores?.displayCategoryScores ?? {};
@@ -94,16 +111,41 @@ function toModel(item: RawModelItem): JoinedModel {
   };
 }
 
-function enrichPricing(models: Map<string, JoinedModel>, item: RawPricingItem): void {
-  const key = str(item.canonicalModelKey);
-  if (!key) return;
-  const model = models.get(key);
-  if (!model) return;
-  model.inputPrice = num(item.inputPrice);
-  model.outputPrice = num(item.outputPrice);
-  model.hasNumericPricing = item.hasNumericPricing === true;
-  model.isFreePricing = item.isFreePricing === true;
-  model.priceNote = str(item.note);
+function applyOpenRouterPricing(models: JoinedModel[], raw: string): void {
+  const byName = new Map<string, JoinedModel>();
+  for (const model of models) {
+    const n = normalizeName(model.name);
+    if (n && !byName.has(n)) byName.set(n, model);
+  }
+
+  const orByName = new Map<string, RawOpenRouterItem>();
+  const envelope = JSON.parse(raw) as { data?: RawOpenRouterItem[] };
+  for (const item of envelope.data ?? []) {
+    const name = str(item.name);
+    if (!name) continue;
+    const n = normalizeName(stripOrgPrefix(name));
+    if (!n) continue;
+    const existing = orByName.get(n);
+    const itemIsFreeEndpoint = String(item.id ?? '').endsWith(':free');
+    const existingIsFreeEndpoint = existing
+      ? String(existing.id ?? '').endsWith(':free')
+      : false;
+    if (!existing || (existingIsFreeEndpoint && !itemIsFreeEndpoint)) {
+      orByName.set(n, item);
+    }
+  }
+
+  for (const [n, item] of orByName) {
+    const model = byName.get(n);
+    if (!model) continue;
+    const inputPrice = tokenPriceToPerM(item.pricing?.prompt);
+    const outputPrice = tokenPriceToPerM(item.pricing?.completion);
+    if (inputPrice == null || outputPrice == null) continue;
+    model.inputPrice = inputPrice;
+    model.outputPrice = outputPrice;
+    model.hasNumericPricing = true;
+    model.isFreePricing = inputPrice === 0 && outputPrice === 0;
+  }
 }
 
 function enrichSpeed(models: Map<string, JoinedModel>, item: RawSpeedItem): void {
@@ -117,7 +159,6 @@ function enrichSpeed(models: Map<string, JoinedModel>, item: RawSpeedItem): void
 
 function build(): { models: JoinedModel[]; meta: DatasetMeta } {
   const modelsEnvelope = parseEnvelope<RawModelItem>(modelsJson);
-  const pricingEnvelope = parseEnvelope<RawPricingItem>(pricingJson);
   const speedEnvelope = parseEnvelope<RawSpeedItem>(speedJson);
 
   const byKey = new Map<string, JoinedModel>();
@@ -129,7 +170,7 @@ function build(): { models: JoinedModel[]; meta: DatasetMeta } {
       models.push(model);
     }
   }
-  for (const item of pricingEnvelope.items ?? []) enrichPricing(byKey, item);
+  applyOpenRouterPricing(models, openrouterJson);
   for (const item of speedEnvelope.items ?? []) enrichSpeed(byKey, item);
 
   models.sort((a, b) => a.name.localeCompare(b.name));
@@ -138,6 +179,8 @@ function build(): { models: JoinedModel[]; meta: DatasetMeta } {
     generatedAt: str(modelsEnvelope.generatedAt),
     sourceLastUpdated: str(modelsEnvelope.sourceLastUpdated),
     qualityProvider: 'BenchLM',
+    pricingProvider: 'OpenRouter',
+    pricingProviderUrl: 'https://openrouter.ai/models',
     speedProvider: str(speedEnvelope.source?.name) ?? 'Artificial Analysis',
     speedProviderUrl: str(speedEnvelope.source?.url),
     canonicalUrl: str(modelsEnvelope.canonicalUrl),

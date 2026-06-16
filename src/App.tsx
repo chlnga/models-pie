@@ -47,7 +47,9 @@ export default function App() {
             </div>
           </div>
           <p className="header__data muted">
-            {datasetMeta.qualityProvider} quality &amp; pricing
+            {datasetMeta.qualityProvider} quality
+            {' · '}
+            pricing via {datasetMeta.pricingProvider}
             {datasetMeta.sourceLastUpdated && ` · updated ${datasetMeta.sourceLastUpdated}`}
             {' · '}
             speed via {datasetMeta.speedProvider}
@@ -88,6 +90,14 @@ export default function App() {
             </a>
           ) : (
             datasetMeta.qualityProvider
+          )}
+          {' · '}
+          {datasetMeta.pricingProviderUrl ? (
+            <a href={datasetMeta.pricingProviderUrl} target="_blank" rel="noreferrer noopener">
+              {datasetMeta.pricingProvider}
+            </a>
+          ) : (
+            datasetMeta.pricingProvider
           )}
           {datasetMeta.speedProviderUrl ? (
             <>
