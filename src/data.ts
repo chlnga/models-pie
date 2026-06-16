@@ -93,6 +93,18 @@ const tokenPriceToPerM = (v: unknown): number | null => {
   return parsed * 1_000_000;
 };
 
+const TIER_SUFFIX = /\s*\((?:max|high|medium|low|turbo|lite|base|preview|thinking|reasoning)\)$/i;
+
+function applyItemPrice(model: JoinedModel, item: RawOpenRouterItem): void {
+  const inputPrice = tokenPriceToPerM(item.pricing?.prompt);
+  const outputPrice = tokenPriceToPerM(item.pricing?.completion);
+  if (inputPrice == null || outputPrice == null) return;
+  model.inputPrice = inputPrice;
+  model.outputPrice = outputPrice;
+  model.hasNumericPricing = true;
+  model.isFreePricing = inputPrice === 0 && outputPrice === 0;
+}
+
 function toModel(item: RawModelItem): JoinedModel {
   const cats = item.scores?.displayCategoryScores ?? {};
   const categories: Partial<Record<CategoryKey, number | null>> = {};
@@ -154,14 +166,19 @@ function applyOpenRouterPricing(models: JoinedModel[], raw: string): void {
 
   for (const [n, item] of orByName) {
     const model = byName.get(n);
-    if (!model) continue;
-    const inputPrice = tokenPriceToPerM(item.pricing?.prompt);
-    const outputPrice = tokenPriceToPerM(item.pricing?.completion);
-    if (inputPrice == null || outputPrice == null) continue;
-    model.inputPrice = inputPrice;
-    model.outputPrice = outputPrice;
-    model.hasNumericPricing = true;
-    model.isFreePricing = inputPrice === 0 && outputPrice === 0;
+    if (model) applyItemPrice(model, item);
+  }
+
+  // BenchLM tracks effort tiers as separate rows ("...Pro (Max)") but OpenRouter
+  // exposes one base endpoint, so on an exact-name miss retry with the tier suffix
+  // stripped to inherit the base price. Only fires when the stripped name is a real
+  // OpenRouter endpoint, so a distinct model like "Qwen3.7 Max" is never matched.
+  for (const model of models) {
+    if (model.hasNumericPricing) continue;
+    const stripped = normalizeName(model.name.replace(TIER_SUFFIX, '').trim());
+    if (!stripped || stripped === normalizeName(model.name)) continue;
+    const item = orByName.get(stripped);
+    if (item) applyItemPrice(model, item);
   }
 }
 
