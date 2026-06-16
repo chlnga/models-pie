@@ -96,6 +96,12 @@ export const SPEED_OPTIONS: { value: SpeedMetric; label: string }[] = [
   { value: 'ttft', label: 'Time to first token' },
 ];
 
+export const SPEED_SHORT_LABELS: Record<SpeedMetric, string> = {
+  blend: 'Tokens/s · TTFT',
+  tps: 'Tokens/s',
+  ttft: 'TTFT',
+};
+
 export const CATEGORY_LABELS: Record<CategoryKey, string> = {
   agentic: 'Agentic',
   coding: 'Coding',

@@ -1,6 +1,6 @@
 import ScoreBar from './ScoreBar';
-import type { QualityMetric, RankedModel } from '../types';
-import { QUALITY_LABELS } from '../types';
+import type { QualityMetric, RankedModel, SpeedMetric } from '../types';
+import { QUALITY_LABELS, SPEED_SHORT_LABELS } from '../types';
 import {
   formatBlendedCost,
   formatMatch,
@@ -15,6 +15,7 @@ interface ResultsTableProps {
   totalCount: number;
   eligibleCount: number;
   qualityMetric: QualityMetric;
+  speedMetric: SpeedMetric;
   weights: { good: number; cheap: number; fast: number };
   query: string;
   limit: number;
@@ -30,6 +31,7 @@ export default function ResultsTable({
   totalCount,
   eligibleCount,
   qualityMetric,
+  speedMetric,
   weights,
   query,
   limit,
@@ -105,7 +107,7 @@ export default function ResultsTable({
                 </th>
                 <th className="col-fast">
                   <span className="dot dot--fast" aria-hidden="true" />
-                  Tokens/s · TTFT
+                  {SPEED_SHORT_LABELS[speedMetric]}
                 </th>
                 <th className="col-match">Match</th>
               </tr>
@@ -159,7 +161,7 @@ export default function ResultsTable({
                       <ScoreBar value={m.cheapPct} variant="cheap" weight={weights.cheap} />
                     </div>
                   </td>
-                  <td data-label="Tokens/s · TTFT" className="col-fast">
+                  <td data-label={SPEED_SHORT_LABELS[speedMetric]} className="col-fast">
                     <div className="metric metric--dual">
                       <span className="metric__value">
                         {formatTps(m.tokensPerSecondRaw)} <span className="muted">t/s</span>

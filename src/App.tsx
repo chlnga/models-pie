@@ -71,6 +71,7 @@ export default function App() {
           totalCount={result.totalConsidered}
           eligibleCount={result.eligibleCount}
           qualityMetric={qualityMetric}
+          speedMetric={speedMetric}
           weights={weights}
           query={query}
           limit={limit}

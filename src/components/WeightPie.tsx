@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react';
 import type { Dimension, Weights } from '../types';
 
@@ -51,6 +51,7 @@ interface DragState {
   prev: number;
   acc: number;
   start: number;
+  fixed: number;
 }
 
 interface PieHandleProps {
@@ -59,8 +60,6 @@ interface PieHandleProps {
   label: string;
   valuenow: number;
   onPointerDown: (e: ReactPointerEvent) => void;
-  onPointerMove: (e: ReactPointerEvent) => void;
-  onPointerUp: (e: ReactPointerEvent) => void;
   onKeyDown: (e: ReactKeyboardEvent) => void;
 }
 
@@ -70,8 +69,6 @@ function PieHandle({
   label,
   valuenow,
   onPointerDown,
-  onPointerMove,
-  onPointerUp,
   onKeyDown,
 }: PieHandleProps) {
   return (
@@ -85,8 +82,6 @@ function PieHandle({
       aria-valuemax={100}
       aria-valuenow={valuenow}
       onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
       onKeyDown={onKeyDown}
     >
       <circle className="pie__handle-ring" r={HANDLE_R} />
@@ -116,12 +111,12 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
     dispCf = mid + FAN / 2;
   }
 
-  function pointerTheta(e: ReactPointerEvent): number {
+  function pointerTheta(clientX: number, clientY: number): number {
     const svg = svgRef.current;
     if (!svg) return 0;
     const rect = svg.getBoundingClientRect();
-    const px = e.clientX - (rect.left + rect.width / 2);
-    const py = e.clientY - (rect.top + rect.height / 2);
+    const px = clientX - (rect.left + rect.width / 2);
+    const py = clientY - (rect.top + rect.height / 2);
     let th = (Math.atan2(px, -py) * 180) / Math.PI;
     if (th < 0) th += 360;
     return th;
@@ -131,42 +126,54 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
     const d = drag.current;
     if (!d) return;
     if (d.divider === 'goodCheap') {
-      const good = clamp(d.start + d.acc / 3.6, 0, 100 - f);
-      onWeightsChange({ good, cheap: 100 - f - good, fast: f });
+      const good = clamp(d.start + d.acc / 3.6, 0, 100 - d.fixed);
+      onWeightsChange({ good, cheap: 100 - d.fixed - good, fast: d.fixed });
     } else {
-      const cheap = clamp(d.start + d.acc / 3.6, 0, 100 - g);
-      onWeightsChange({ good: g, cheap, fast: 100 - g - cheap });
+      const cheap = clamp(d.start + d.acc / 3.6, 0, 100 - d.fixed);
+      onWeightsChange({ good: d.fixed, cheap, fast: 100 - d.fixed - cheap });
     }
   }
 
   function onPointerDown(divider: Divider) {
     return (e: ReactPointerEvent) => {
       e.preventDefault();
-      (e.currentTarget as Element).setPointerCapture(e.pointerId);
       drag.current = {
         divider,
-        prev: pointerTheta(e),
+        prev: pointerTheta(e.clientX, e.clientY),
         acc: 0,
         start: divider === 'goodCheap' ? g : c,
+        fixed: divider === 'goodCheap' ? f : g,
       };
       setActive(divider);
     };
   }
 
-  function onPointerMove(e: ReactPointerEvent) {
-    if (!drag.current) return;
-    const th = pointerTheta(e);
-    drag.current.acc += shortestStep(th - drag.current.prev);
-    drag.current.prev = th;
-    applyDrag();
-  }
-
-  function onPointerUp(e: ReactPointerEvent) {
-    if (!drag.current) return;
-    (e.currentTarget as Element).releasePointerCapture(e.pointerId);
-    drag.current = null;
-    setActive(null);
-  }
+  // Window-level listeners while dragging so the release lands no matter where
+  // the pointer is (including off the pie), which the per-element handlers +
+  // pointer capture failed to guarantee.
+  useEffect(() => {
+    if (!active) return;
+    const move = (e: PointerEvent) => {
+      const d = drag.current;
+      if (!d) return;
+      const th = pointerTheta(e.clientX, e.clientY);
+      d.acc += shortestStep(th - d.prev);
+      d.prev = th;
+      applyDrag();
+    };
+    const end = () => {
+      drag.current = null;
+      setActive(null);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+    };
+  }, [active]);
 
   function nudge(divider: Divider, delta: number) {
     if (divider === 'goodCheap') {
@@ -245,8 +252,6 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
         label={`Divider between good and cheap. Good ${Math.round(g)} percent.`}
         valuenow={Math.round(g)}
         onPointerDown={onPointerDown('goodCheap')}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
         onKeyDown={onKeyDown('goodCheap')}
       />
       <PieHandle
@@ -255,8 +260,6 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
         label={`Divider between cheap and fast. Cheap ${Math.round(c)} percent.`}
         valuenow={Math.round(c)}
         onPointerDown={onPointerDown('cheapFast')}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
         onKeyDown={onKeyDown('cheapFast')}
       />
 
