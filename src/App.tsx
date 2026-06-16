@@ -1,19 +1,19 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import WeightControls from './components/WeightControls';
-import WeightPie from './components/WeightPie';
-import MetricSelectors from './components/MetricSelectors';
-import ResultsTable from './components/ResultsTable';
-import { joinedModels, datasetMeta } from './data';
-import { rank } from './scoring';
-import type { QualityMetric, SpeedMetric, Weights } from './types';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import WeightControls from "./components/WeightControls";
+import WeightPie from "./components/WeightPie";
+import MetricSelectors from "./components/MetricSelectors";
+import ResultsTable from "./components/ResultsTable";
+import { joinedModels, datasetMeta } from "./data";
+import { rank } from "./scoring";
+import type { QualityMetric, SpeedMetric, Weights } from "./types";
 
 const DEFAULT_WEIGHTS: Weights = { good: 33.33, cheap: 33.33, fast: 33.34 };
 
 export default function App() {
   const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS);
-  const [qualityMetric, setQualityMetric] = useState<QualityMetric>('overall');
-  const [speedMetric, setSpeedMetric] = useState<SpeedMetric>('blend');
-  const [query, setQuery] = useState('');
+  const [qualityMetric, setQualityMetric] = useState<QualityMetric>("overall");
+  const [speedMetric, setSpeedMetric] = useState<SpeedMetric>("blend");
+  const [query, setQuery] = useState("");
   const [limit, setLimit] = useState<number>(50);
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -26,20 +26,20 @@ export default function App() {
     if (!panel) return;
     const update = () => setDocked(panel.getBoundingClientRect().top < 16);
     update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
     };
   }, []);
 
   useLayoutEffect(() => {
     const el = pieWrapRef.current;
     if (!el) return;
-    el.style.transition = 'none';
-    el.style.transform = '';
-    el.style.transformOrigin = 'top left';
+    el.style.transition = "none";
+    el.style.transform = "";
+    el.style.transformOrigin = "top left";
     const last = el.getBoundingClientRect();
     const first = prevRectRef.current;
     if (first) {
@@ -49,8 +49,8 @@ export default function App() {
       const sy = first.height / last.height;
       el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       el.getBoundingClientRect();
-      el.style.transition = 'transform .34s cubic-bezier(.2,.7,.2,1)';
-      el.style.transform = '';
+      el.style.transition = "transform .34s cubic-bezier(.2,.7,.2,1)";
+      el.style.transform = "";
     }
     prevRectRef.current = last;
   }, [docked]);
@@ -81,17 +81,51 @@ export default function App() {
             <div>
               <h1 className="header__title">Which model?</h1>
               <p className="header__subtitle">
-                Pick your <em>fast</em>, <em>cheap</em>, and <em>good</em> trade-offs
-                — get the best-matching LLMs.
+                Pick your <em>fast</em>, <em>cheap</em>, and <em>good</em>{" "}
+                trade-offs — get the best-matching LLMs.
               </p>
             </div>
           </div>
           <p className="header__data muted">
-            {datasetMeta.qualityProvider}
-            {' · '}
-            {datasetMeta.pricingProvider}
-            {' · '}
-            {datasetMeta.speedProvider}
+            Data:{" "}
+            {datasetMeta.canonicalUrl ? (
+              <a
+                href={datasetMeta.canonicalUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {datasetMeta.qualityProvider}
+              </a>
+            ) : (
+              datasetMeta.qualityProvider
+            )}
+            {" · "}
+            {datasetMeta.pricingProviderUrl ? (
+              <a
+                href={datasetMeta.pricingProviderUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {datasetMeta.pricingProvider}
+              </a>
+            ) : (
+              datasetMeta.pricingProvider
+            )}
+            {datasetMeta.speedProviderUrl ? (
+              <>
+                {" · "}
+                <a
+                  href={datasetMeta.speedProviderUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {datasetMeta.speedProvider}
+                </a>
+              </>
+            ) : null}
+            <br />
+            {datasetMeta.generatedAt &&
+              `Generated ${datasetMeta.generatedAt.slice(0, 10)}`}
           </p>
         </div>
       </header>
@@ -99,7 +133,10 @@ export default function App() {
       <main className="container">
         <div ref={panelRef}>
           <WeightControls>
-            <div ref={pieWrapRef} className={`pie-wrap${docked ? ' is-docked' : ''}`}>
+            <div
+              ref={pieWrapRef}
+              className={`pie-wrap${docked ? " is-docked" : ""}`}
+            >
               <WeightPie weights={weights} onWeightsChange={setWeights} />
             </div>
           </WeightControls>
@@ -127,20 +164,29 @@ export default function App() {
 
       <footer className="footer">
         <p className="muted">
-          Composite scores use percentile-ranking (100 = best within the eligible
-          set), blended from your weights. Blended cost uses an 8:1 input:output
-          ratio per million tokens. Faded rows mark quality scores BenchLM
-          excludes from its leaderboards (sparse or unranked evidence). Data:{' '}
+          Composite scores use percentile-ranking (100 = best within the
+          eligible set), blended from your weights. Blended cost uses an 8:1
+          input:output ratio per million tokens. Faded rows mark quality scores
+          BenchLM excludes from its leaderboards (sparse or unranked evidence).
+          Data:{" "}
           {datasetMeta.canonicalUrl ? (
-            <a href={datasetMeta.canonicalUrl} target="_blank" rel="noreferrer noopener">
+            <a
+              href={datasetMeta.canonicalUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
               {datasetMeta.qualityProvider}
             </a>
           ) : (
             datasetMeta.qualityProvider
           )}
-          {' · '}
+          {" · "}
           {datasetMeta.pricingProviderUrl ? (
-            <a href={datasetMeta.pricingProviderUrl} target="_blank" rel="noreferrer noopener">
+            <a
+              href={datasetMeta.pricingProviderUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
               {datasetMeta.pricingProvider}
             </a>
           ) : (
@@ -148,13 +194,18 @@ export default function App() {
           )}
           {datasetMeta.speedProviderUrl ? (
             <>
-              {' · '}
-              <a href={datasetMeta.speedProviderUrl} target="_blank" rel="noreferrer noopener">
+              {" · "}
+              <a
+                href={datasetMeta.speedProviderUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 {datasetMeta.speedProvider}
               </a>
             </>
           ) : null}
-          {datasetMeta.generatedAt && ` · generated ${datasetMeta.generatedAt.slice(0, 10)}`}
+          {datasetMeta.generatedAt &&
+            ` · generated ${datasetMeta.generatedAt.slice(0, 10)}`}
         </p>
       </footer>
     </div>
