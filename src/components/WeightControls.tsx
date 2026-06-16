@@ -1,10 +1,9 @@
 import type { Dimension, Weights } from '../types';
+import WeightPie from './WeightPie';
 
 interface WeightControlsProps {
   weights: Weights;
-  total: number;
-  onChange: (dim: Dimension, value: number) => void;
-  onPreset: (preset: Weights) => void;
+  onWeightsChange: (w: Weights) => void;
 }
 
 const DIMENSIONS: { key: Dimension; label: string; hint: string }[] = [
@@ -28,14 +27,32 @@ function clampPercent(value: number): number {
   return value;
 }
 
-export default function WeightControls({
-  weights,
-  total,
-  onChange,
-  onPreset,
-}: WeightControlsProps) {
+const KEYS: Dimension[] = ['good', 'cheap', 'fast'];
+
+export default function WeightControls({ weights, onWeightsChange }: WeightControlsProps) {
+  const total = weights.good + weights.cheap + weights.fast;
   const rounded = Math.round(total * 100) / 100;
   const onTarget = Math.abs(rounded - 100) < 0.01;
+
+  const setDim = (dim: Dimension, value: number) => {
+    const v = clampPercent(value);
+    const next: Weights = { ...weights };
+    next[dim] = v;
+    const others = KEYS.filter((k) => k !== dim);
+    const a = weights[others[0]];
+    const b = weights[others[1]];
+    const rem = 100 - v;
+    if (a + b <= 0) {
+      next[others[0]] = rem / 2;
+      next[others[1]] = rem / 2;
+    } else {
+      next[others[0]] = (rem * a) / (a + b);
+      next[others[1]] = (rem * b) / (a + b);
+    }
+    next[others[0]] = Math.round(next[others[0]] * 100) / 100;
+    next[others[1]] = Math.round(next[others[1]] * 100) / 100;
+    onWeightsChange(next);
+  };
 
   return (
     <section className="panel weights">
@@ -49,14 +66,19 @@ export default function WeightControls({
         </div>
       </div>
 
-      <div className="weights__grid">
-        {DIMENSIONS.map(({ key, label, hint }) => (
-          <div key={key} className={`weight weight--${key}`}>
-            <label className="weight__label" htmlFor={`weight-${key}`}>
-              <span className="weight__name">{label}</span>
-              <span className="weight__hint">{hint}</span>
-            </label>
-            <div className="weight__controls">
+      <div className="weights__body">
+        <div className="weights__pie">
+          <WeightPie weights={weights} onWeightsChange={onWeightsChange} />
+        </div>
+
+        <div className="weights__inputs">
+          {DIMENSIONS.map(({ key, label, hint }) => (
+            <div key={key} className={`weight weight--${key}`}>
+              <label className="weight__label" htmlFor={`weight-${key}`}>
+                <span className={`dot dot--${key}`} aria-hidden="true" />
+                <span className="weight__name">{label}</span>
+                <span className="weight__hint">{hint}</span>
+              </label>
               <input
                 id={`weight-${key}`}
                 className="weight__number"
@@ -66,21 +88,11 @@ export default function WeightControls({
                 max={100}
                 step={0.01}
                 value={weights[key]}
-                onChange={(e) => onChange(key, clampPercent(parseFloat(e.target.value)))}
-              />
-              <input
-                className="weight__slider"
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={Math.round(weights[key])}
-                onChange={(e) => onChange(key, clampPercent(parseFloat(e.target.value)))}
-                aria-label={`${label} weight`}
+                onChange={(e) => setDim(key, parseFloat(e.target.value))}
               />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="weights__presets">
@@ -89,7 +101,7 @@ export default function WeightControls({
             key={preset.name}
             type="button"
             className="chip"
-            onClick={() => onPreset(preset.weights)}
+            onClick={() => onWeightsChange(preset.weights)}
           >
             {preset.name}
           </button>

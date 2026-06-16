@@ -4,7 +4,7 @@ import MetricSelectors from './components/MetricSelectors';
 import ResultsTable from './components/ResultsTable';
 import { joinedModels, datasetMeta } from './data';
 import { rank } from './scoring';
-import type { Dimension, QualityMetric, SpeedMetric, Weights } from './types';
+import type { QualityMetric, SpeedMetric, Weights } from './types';
 
 const DEFAULT_WEIGHTS: Weights = { good: 33.33, cheap: 33.33, fast: 33.34 };
 
@@ -14,8 +14,6 @@ export default function App() {
   const [speedMetric, setSpeedMetric] = useState<SpeedMetric>('blend');
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState<number>(50);
-
-  const total = weights.good + weights.cheap + weights.fast;
 
   const result = useMemo(
     () => rank(joinedModels, { ...weights, qualityMetric, speedMetric }),
@@ -33,9 +31,6 @@ export default function App() {
   }, [result, query]);
 
   const visible = limit === Infinity ? filtered : filtered.slice(0, limit);
-
-  const handleWeightChange = (dim: Dimension, value: number) =>
-    setWeights((prev) => ({ ...prev, [dim]: value }));
 
   return (
     <div className="app">
@@ -61,12 +56,7 @@ export default function App() {
       </header>
 
       <main className="container">
-        <WeightControls
-          weights={weights}
-          total={total}
-          onChange={handleWeightChange}
-          onPreset={setWeights}
-        />
+        <WeightControls weights={weights} onWeightsChange={setWeights} />
         <MetricSelectors
           qualityMetric={qualityMetric}
           speedMetric={speedMetric}
