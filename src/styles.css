@@ -304,6 +304,48 @@ a:hover {
   .pie-wrap.is-docked .pie {
     height: 100%;
   }
+  .pie-wrap.is-docked .pie-presets {
+    display: none;
+  }
+}
+
+.pie-presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pie-presets__btn {
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease,
+    transform 0.08s ease;
+}
+.pie-presets__btn:not([aria-pressed='true']):hover {
+  border-color: var(--accent);
+  color: var(--text-strong);
+}
+.pie-presets__btn[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+.pie-presets__btn:active {
+  transform: scale(0.96);
+}
+.pie-presets__btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
 }
 
 .selectors {

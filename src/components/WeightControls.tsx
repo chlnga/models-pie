@@ -10,7 +10,7 @@ export default function WeightControls({ children }: WeightControlsProps) {
       <div className="panel__head">
         <h2 className="panel__title">
           Pick your <em>fast</em>, <em>cheap</em>, and <em>good</em> trade-offs
-          — get the best-matching LLMs.
+          — get the best-matching models.
         </h2>
       </div>
 

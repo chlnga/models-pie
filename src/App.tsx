@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import WeightControls from "./components/WeightControls";
 import WeightPie from "./components/WeightPie";
+import PiePresets from "./components/PiePresets";
 import MetricSelectors from "./components/MetricSelectors";
 import ResultsTable from "./components/ResultsTable";
 import ScrollToTop from "./components/ScrollToTop";
@@ -142,6 +143,7 @@ export default function App() {
               className={`pie-wrap${docked ? " is-docked" : ""}`}
             >
               <WeightPie weights={weights} onWeightsChange={setWeights} />
+              <PiePresets weights={weights} onSelect={setWeights} />
             </div>
           </WeightControls>
         </div>
