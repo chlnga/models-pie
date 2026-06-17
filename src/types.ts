@@ -63,8 +63,6 @@ export interface RankConfig {
 export interface RankedModel extends JoinedModel {
   qualityRaw: number | null;
   costRaw: number | null;
-  tokensPerSecondRaw: number | null;
-  ttftRaw: number | null;
   qualityPct: number | null;
   cheapPct: number | null;
   fastPct: number | null;
@@ -99,9 +97,9 @@ export const SPEED_OPTIONS: { value: SpeedMetric; label: string }[] = [
 ];
 
 export const SPEED_SHORT_LABELS: Record<SpeedMetric, string> = {
-  blend: 'Tokens/s · TTFT',
-  tps: 'Tokens/s',
-  ttft: 'TTFT',
+  blend: 'Throughput · Latency',
+  tps: 'Throughput',
+  ttft: 'Latency',
 };
 
 export const CATEGORY_LABELS: Record<CategoryKey, string> = {

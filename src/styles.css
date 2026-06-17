@@ -632,7 +632,6 @@ a:hover {
   flex-direction: column;
   gap: 6px;
 }
-.metric--dual .metric__value + .metric__value { margin-top: -2px; }
 .metric__value {
   font-family: var(--mono);
   font-weight: 600;

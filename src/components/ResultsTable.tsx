@@ -7,8 +7,6 @@ import {
   formatBlendedCost,
   formatMatch,
   formatScore,
-  formatTps,
-  formatTtft,
 } from '../format';
 
 interface ResultsTableProps {
@@ -147,13 +145,7 @@ export default function ResultsTable({
                     </div>
                   </td>
                   <td data-label={SPEED_SHORT_LABELS[speedMetric]} className="col-fast">
-                    <div className="metric metric--dual">
-                      <span className="metric__value">
-                        {formatTps(m.tokensPerSecondRaw)} <span className="muted">t/s</span>
-                      </span>
-                      <span className="metric__value">
-                        {formatTtft(m.ttftRaw)}
-                      </span>
+                    <div className="metric">
                       <ScoreBar value={m.fastPct} variant="fast" weight={weights.fast} />
                     </div>
                   </td>

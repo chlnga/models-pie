@@ -18,16 +18,6 @@ export function formatPricePerM(value: number | null): string {
   return `$${value.toFixed(2)}`;
 }
 
-export function formatTps(value: number | null | undefined): string {
-  if (value == null) return '—';
-  return value.toFixed(value < 100 ? 1 : 0);
-}
-
-export function formatTtft(value: number | null | undefined): string {
-  if (value == null) return '—';
-  return `${value.toFixed(2)}s`;
-}
-
 export function formatPercent(value: number | null | undefined, digits = 0): string {
   if (value == null) return '—';
   return `${value.toFixed(digits)}%`;

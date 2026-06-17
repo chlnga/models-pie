@@ -22,8 +22,8 @@ export const SOURCING: Record<Dimension, SourcingInfo> = {
     body: 'Live hosted-API prices, blended at an 8:1 input:output ratio per million tokens. Effort tiers (e.g. “Pro (Max)”) inherit the base endpoint’s price.',
   },
   fast: {
-    label: 'Fast — Hybrid',
-    body: 'Absolute speeds where available come from BenchLM (a re-publication of Artificial Analysis, MIT). Ranking across uses OpenRouter’s throughput and latency ordering.',
+    label: 'Fast — OpenRouter',
+    body: 'Ranking uses OpenRouter’s throughput and latency ordering, which reflects real-world hosted-API serving. Absolute speed values aren’t shown: per-model measurements are taken at varying reasoning-effort tiers and don’t align with the ordinal ranking.',
   },
 };
 

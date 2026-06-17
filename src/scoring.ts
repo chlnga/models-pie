@@ -18,9 +18,11 @@ export function blendedCost(model: JoinedModel): number | null {
   return (INPUT_WEIGHT * inputPrice + OUTPUT_WEIGHT * outputPrice) / BLEND_DIVISOR;
 }
 
+// BenchLM encodes “not on the leaderboard” as 0 (not null); treat
+// non-positive scores as missing so they display as “—”.
 export function qualityRaw(model: JoinedModel, metric: QualityMetric): number | null {
-  if (metric === 'overall') return model.overallScore;
-  return model.categories[metric] ?? null;
+  const value = metric === 'overall' ? model.overallScore : (model.categories[metric] ?? null);
+  return value != null && value > 0 ? value : null;
 }
 
 function isQualityConfident(model: JoinedModel, metric: QualityMetric): boolean {
@@ -176,8 +178,6 @@ export function rank(models: JoinedModel[], cfg: RankConfig): RankResult {
       ...m,
       qualityRaw: qualityRaw(m, cfg.qualityMetric),
       costRaw: blendedCost(m),
-      tokensPerSecondRaw: m.tokensPerSecond,
-      ttftRaw: m.ttft,
       qualityPct,
       cheapPct: cheapPctVal,
       fastPct: fastPctVal,

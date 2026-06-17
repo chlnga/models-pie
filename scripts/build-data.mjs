@@ -179,17 +179,11 @@ function enrichSpeedRank(models, throughputArr, latencyArr) {
   assign(throughputArr, 'tpsRankValue', true);
   assign(latencyArr, 'ttftRankValue', false);
 
-  for (const model of models) {
-    if (model.tpsRankValue != null && model.ttftRankValue != null) continue;
-    const stripped = normalizeName(model.name.replace(TIER_SUFFIX, '').trim());
-    if (!stripped || stripped === normalizeName(model.name)) continue;
-    const base = byName.get(stripped);
-    if (!base) continue;
-    if (model.tpsRankValue == null && base.tpsRankValue != null)
-      model.tpsRankValue = base.tpsRankValue;
-    if (model.ttftRankValue == null && base.ttftRankValue != null)
-      model.ttftRankValue = base.ttftRankValue;
-  }
+  // Intentionally NO tier-suffix inheritance: a variant like “DeepSeek V4 Pro
+  // (Max)” runs a different reasoning effort than its base, so inheriting the
+  // base’s ordinal would rank it on the wrong tier’s throughput/latency.
+  // Variants lacking their own OpenRouter entry stay null and are correctly
+  // excluded from speed-weighted ranking. Do not re-add this fallback.
 }
 
 function build() {
