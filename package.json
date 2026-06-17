@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/chlnga/models-pie.git"
   },
+  "homepage": "https://modelspie.com",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
