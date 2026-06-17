@@ -37,6 +37,8 @@ export interface JoinedModel {
   priceNote: string | null;
   tokensPerSecond: number | null;
   ttft: number | null;
+  tpsRankValue: number | null;
+  ttftRankValue: number | null;
 }
 
 export interface DatasetMeta {

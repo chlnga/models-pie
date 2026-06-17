@@ -40,10 +40,29 @@ jobs:
             echo "ERROR: failed to fetch $url -> $out"
             exit 1
           }
+          fetch_rank() {
+            url="$1"; out="$2"
+            for attempt in 1 2 3; do
+              if curl -fsSL --retry 3 --retry-delay 5 -H "User-Agent: which-model-ci" -o "$out.tmp" "$url"; then
+                if jq -e '.data' "$out.tmp" >/dev/null 2>&1; then
+                  jq '[.data[] | {id: (.id // ""), name: (.name // "")}]' "$out.tmp" > "$out"
+                  rm -f "$out.tmp"
+                  echo "  ok  $out -> $(jq 'length' "$out") ranked entries"
+                  return 0
+                fi
+              fi
+              echo "  attempt $attempt failed for $out"
+              sleep 5
+            done
+            echo "ERROR: failed to fetch $url -> $out"
+            exit 1
+          }
           fetch https://benchlm.ai/data/models.json models.json '.items'
           fetch https://benchlm.ai/data/pricing.json pricing.json '.items'
           fetch https://benchlm.ai/data/speed.json speed.json '.items'
           fetch https://openrouter.ai/api/v1/models openrouter-models.json '.data'
+          fetch_rank "https://openrouter.ai/api/v1/models?sort=throughput-high-to-low" speed-throughput-rank.json
+          fetch_rank "https://openrouter.ai/api/v1/models?sort=latency-low-to-high" speed-latency-rank.json
 
       - uses: actions/setup-node@v4
         with:

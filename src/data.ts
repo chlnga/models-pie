@@ -9,6 +9,8 @@ import type {
 import modelsJson from '../models.json?raw';
 import openrouterJson from '../openrouter-models.json?raw';
 import speedJson from '../speed.json?raw';
+import throughputRankJson from '../speed-throughput-rank.json?raw';
+import latencyRankJson from '../speed-latency-rank.json?raw';
 
 const CATEGORY_KEYS: CategoryKey[] = [
   'agentic',
@@ -64,6 +66,11 @@ interface RawSpeedItem {
   canonicalModelKey?: string | null;
   tokensPerSecond?: number | null;
   ttft?: number | null;
+}
+
+interface RawRankEntry {
+  id?: string | null;
+  name?: string | null;
 }
 
 const num = (v: unknown): number | null =>
@@ -137,6 +144,8 @@ function toModel(item: RawModelItem): JoinedModel {
     priceNote: null,
     tokensPerSecond: null,
     ttft: null,
+    tpsRankValue: null,
+    ttftRankValue: null,
   };
 }
 
@@ -191,6 +200,49 @@ function enrichSpeed(models: Map<string, JoinedModel>, item: RawSpeedItem): void
   model.ttft = num(item.ttft);
 }
 
+function enrichSpeedRank(
+  models: JoinedModel[],
+  throughputRaw: string,
+  latencyRaw: string,
+): void {
+  const byName = new Map<string, JoinedModel>();
+  for (const model of models) {
+    const n = normalizeName(model.name);
+    if (n && !byName.has(n)) byName.set(n, model);
+  }
+  // OpenRouter /models sorts by throughput and latency but exposes only an
+  // ordinal position (no value), so encode each position for the existing
+  // percentileRank: throughput higher-is-better (total - position), latency
+  // lower-is-better (raw position). Effort-tier rows inherit the base endpoint
+  // rank via the same tier-suffix fallback as the pricing join.
+  const assign = (
+    raw: string,
+    field: 'tpsRankValue' | 'ttftRankValue',
+    higherIsBetter: boolean,
+  ) => {
+    const arr = JSON.parse(raw) as RawRankEntry[];
+    const total = arr.length;
+    arr.forEach((entry, idx) => {
+      const name = str(entry.name);
+      if (!name) return;
+      const model = byName.get(normalizeName(stripOrgPrefix(name)));
+      if (model) model[field] = higherIsBetter ? total - idx : idx;
+    });
+  };
+  assign(throughputRaw, 'tpsRankValue', true);
+  assign(latencyRaw, 'ttftRankValue', false);
+
+  for (const model of models) {
+    if (model.tpsRankValue != null && model.ttftRankValue != null) continue;
+    const stripped = normalizeName(model.name.replace(TIER_SUFFIX, '').trim());
+    if (!stripped || stripped === normalizeName(model.name)) continue;
+    const base = byName.get(stripped);
+    if (!base) continue;
+    if (model.tpsRankValue == null && base.tpsRankValue != null) model.tpsRankValue = base.tpsRankValue;
+    if (model.ttftRankValue == null && base.ttftRankValue != null) model.ttftRankValue = base.ttftRankValue;
+  }
+}
+
 function build(): { models: JoinedModel[]; meta: DatasetMeta } {
   const modelsEnvelope = parseEnvelope<RawModelItem>(modelsJson);
   const speedEnvelope = parseEnvelope<RawSpeedItem>(speedJson);
@@ -206,6 +258,7 @@ function build(): { models: JoinedModel[]; meta: DatasetMeta } {
   }
   applyOpenRouterPricing(models, openrouterJson);
   for (const item of speedEnvelope.items ?? []) enrichSpeed(byKey, item);
+  enrichSpeedRank(models, throughputRankJson, latencyRankJson);
 
   models.sort((a, b) => a.name.localeCompare(b.name));
 

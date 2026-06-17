@@ -90,10 +90,6 @@ export default function App() {
             <span className="header__logo" aria-hidden="true" />
             <div>
               <h1 className="header__title">Which model?</h1>
-              <p className="header__subtitle">
-                Pick your <em>fast</em>, <em>cheap</em>, and <em>good</em>{" "}
-                trade-offs — get the best-matching LLMs.
-              </p>
             </div>
           </div>
           <p className="header__data muted">
@@ -173,12 +169,36 @@ export default function App() {
       </main>
 
       <footer className="footer">
+        <section className="sourcing" aria-label="How data is sourced">
+          <div className="footer__title muted">How data is sourced</div>
+          <ul className="sourcing__list">
+            <li>
+              <p className="muted">
+                <strong>Good — BenchLM.</strong> Overall and per-category
+                quality scores.
+              </p>
+            </li>
+            <li>
+              <p className="muted">
+                <strong>Cheap — OpenRouter.</strong> Live hosted-API prices,
+                blended at an 8:1 input:output ratio per million tokens. Effort
+                tiers (e.g. “Pro (Max)”) inherit the base endpoint's price.
+              </p>
+            </li>
+            <li>
+              <p className="muted">
+                <strong>Fast — Hybrid.</strong> Absolute speeds where available
+                come from BenchLM (a re-publication of Artificial Analysis,
+                MIT). Ranking across uses OpenRouter's throughput and latency
+                ordering.
+              </p>
+            </li>
+          </ul>
+        </section>
         <p className="muted">
           Composite scores use percentile-ranking (100 = best within the
-          eligible set), blended from your weights. Blended cost uses an 8:1
-          input:output ratio per million tokens. Faded rows mark quality scores
-          BenchLM excludes from its leaderboards (sparse or unranked evidence).
-          Data:{" "}
+          eligible set), blended from your weights. A model ranks only when it
+          has data for every weighted dimension. Data:{" "}
           {datasetMeta.canonicalUrl ? (
             <a
               href={datasetMeta.canonicalUrl}
@@ -215,7 +235,7 @@ export default function App() {
             </>
           ) : null}
           {datasetMeta.generatedAt &&
-            ` · generated ${datasetMeta.generatedAt.slice(0, 10)}`}
+            ` · Generated ${datasetMeta.generatedAt.slice(0, 10)}`}
         </p>
       </footer>
     </div>

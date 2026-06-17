@@ -42,9 +42,9 @@ export function speedDataPresent(
   model: JoinedModel,
   metric: SpeedMetric,
 ): boolean {
-  if (metric === 'tps') return model.tokensPerSecond != null;
-  if (metric === 'ttft') return model.ttft != null;
-  return model.tokensPerSecond != null && model.ttft != null;
+  if (metric === 'tps') return model.tpsRankValue != null;
+  if (metric === 'ttft') return model.ttftRankValue != null;
+  return model.tpsRankValue != null && model.ttftRankValue != null;
 }
 
 // Percentile-rank onto 0..100 (100 = best). Robust to skewed distributions such
@@ -93,29 +93,29 @@ function computeFastPercentiles(
   if (metric === 'tps') {
     return percentileRank(
       eligible
-        .filter((m) => m.tokensPerSecond != null)
-        .map((m) => ({ key: m.key, value: m.tokensPerSecond as number })),
+        .filter((m) => m.tpsRankValue != null)
+        .map((m) => ({ key: m.key, value: m.tpsRankValue as number })),
       true,
     );
   }
   if (metric === 'ttft') {
     return percentileRank(
       eligible
-        .filter((m) => m.ttft != null)
-        .map((m) => ({ key: m.key, value: m.ttft as number })),
+        .filter((m) => m.ttftRankValue != null)
+        .map((m) => ({ key: m.key, value: m.ttftRankValue as number })),
       false,
     );
   }
   const tps = percentileRank(
     eligible
-      .filter((m) => m.tokensPerSecond != null)
-      .map((m) => ({ key: m.key, value: m.tokensPerSecond as number })),
+      .filter((m) => m.tpsRankValue != null)
+      .map((m) => ({ key: m.key, value: m.tpsRankValue as number })),
     true,
   );
   const ttft = percentileRank(
     eligible
-      .filter((m) => m.ttft != null)
-      .map((m) => ({ key: m.key, value: m.ttft as number })),
+      .filter((m) => m.ttftRankValue != null)
+      .map((m) => ({ key: m.key, value: m.ttftRankValue as number })),
     false,
   );
   const blend = new Map<string, number>();
