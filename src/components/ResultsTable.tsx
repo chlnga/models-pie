@@ -18,12 +18,8 @@ interface ResultsTableProps {
   speedMetric: SpeedMetric;
   weights: { good: number; cheap: number; fast: number };
   query: string;
-  limit: number;
   onQueryChange: (query: string) => void;
-  onLimitChange: (limit: number) => void;
 }
-
-const LIMIT_OPTIONS = [25, 50, 100];
 
 export default function ResultsTable({
   ranked,
@@ -34,9 +30,7 @@ export default function ResultsTable({
   speedMetric,
   weights,
   query,
-  limit,
   onQueryChange,
-  onLimitChange,
 }: ResultsTableProps) {
   return (
     <section className="panel results">
@@ -58,27 +52,6 @@ export default function ResultsTable({
             onChange={(e) => onQueryChange(e.target.value)}
             aria-label="Filter models"
           />
-          <div className="segmented" role="group" aria-label="Rows to show">
-            {LIMIT_OPTIONS.map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                className="segmented__btn"
-                data-active={limit === opt}
-                onClick={() => onLimitChange(opt)}
-              >
-                {opt}
-              </button>
-            ))}
-            <button
-              type="button"
-              className="segmented__btn"
-              data-active={limit === Infinity}
-              onClick={() => onLimitChange(Infinity)}
-            >
-              All
-            </button>
-          </div>
         </div>
       </div>
 
@@ -136,12 +109,9 @@ export default function ResultsTable({
                         {m.sourceType?.toLowerCase().includes('open') && (
                           <span className="tag tag--open">Open weight</span>
                         )}
-                        {m.confidenceTag && (
-                          <span
-                            className="tag tag--lowconf"
-                            title="This quality score is not on BenchLM's leaderboard for this metric"
-                          >
-                            {m.confidenceTag}
+                        {m.lowConfidence && (
+                          <span className="tag tag--lowconf" title={m.confidenceTag ?? undefined}>
+                            Low confidence
                           </span>
                         )}
                       </span>

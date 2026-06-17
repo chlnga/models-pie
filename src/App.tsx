@@ -3,6 +3,7 @@ import WeightControls from "./components/WeightControls";
 import WeightPie from "./components/WeightPie";
 import MetricSelectors from "./components/MetricSelectors";
 import ResultsTable from "./components/ResultsTable";
+import ScrollToTop from "./components/ScrollToTop";
 import { joinedModels, datasetMeta } from "./data";
 import { rank } from "./scoring";
 import type { QualityMetric, SpeedMetric, Weights } from "./types";
@@ -14,7 +15,6 @@ export default function App() {
   const [qualityMetric, setQualityMetric] = useState<QualityMetric>("overall");
   const [speedMetric, setSpeedMetric] = useState<SpeedMetric>("blend");
   const [query, setQuery] = useState("");
-  const [limit, setLimit] = useState<number>(50);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const pieWrapRef = useRef<HTMLDivElement>(null);
@@ -79,8 +79,6 @@ export default function App() {
         (m.creator?.toLowerCase().includes(q) ?? false),
     );
   }, [result, query]);
-
-  const visible = limit === Infinity ? filtered : filtered.slice(0, limit);
 
   return (
     <div className="app">
@@ -154,7 +152,7 @@ export default function App() {
           onSpeedChange={setSpeedMetric}
         />
         <ResultsTable
-          ranked={visible}
+          ranked={filtered}
           visibleCount={filtered.length}
           totalCount={result.totalConsidered}
           eligibleCount={result.eligibleCount}
@@ -162,9 +160,7 @@ export default function App() {
           speedMetric={speedMetric}
           weights={weights}
           query={query}
-          limit={limit}
           onQueryChange={setQuery}
-          onLimitChange={setLimit}
         />
       </main>
 
@@ -238,6 +234,8 @@ export default function App() {
             ` · Generated ${datasetMeta.generatedAt.slice(0, 10)}`}
         </p>
       </footer>
+
+      <ScrollToTop />
     </div>
   );
 }

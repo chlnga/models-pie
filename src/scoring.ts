@@ -31,11 +31,11 @@ function isQualityConfident(model: JoinedModel, metric: QualityMetric): boolean 
 
 function confidenceTagFor(model: JoinedModel): string {
   const sparse = model.scoreConfidence === 1 || (model.trustedBenchmarkCount ?? 99) <= 1;
-  if (!sparse) return 'not BenchLM-ranked';
+  if (!sparse) return "Not on BenchLM's leaderboard for this metric";
   const trusted = model.trustedBenchmarkCount;
-  if (trusted === 0) return 'low confidence · no trusted benchmarks';
-  if (trusted === 1) return 'low confidence · 1 trusted benchmark';
-  return 'low confidence';
+  if (trusted === 0) return 'No trusted benchmarks for this metric';
+  if (trusted === 1) return 'Only 1 trusted benchmark';
+  return 'Sparse benchmark evidence';
 }
 
 export function speedDataPresent(

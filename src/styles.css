@@ -511,7 +511,7 @@ a:hover {
 }
 .tag--free { background: var(--cheap-soft); color: color-mix(in oklch, var(--cheap) 55%, var(--text-strong)); }
 .tag--open { background: var(--good-soft); color: color-mix(in oklch, var(--good) 55%, var(--text-strong)); }
-.tag--lowconf { background: color-mix(in oklch, oklch(55% 0.04 280) 16%, var(--surface)); color: color-mix(in oklch, oklch(55% 0.06 280) 55%, var(--text-strong)); }
+.tag--lowconf { background: color-mix(in oklch, oklch(55% 0.04 280) 16%, var(--surface)); color: color-mix(in oklch, oklch(55% 0.06 280) 55%, var(--text-strong)); cursor: help; }
 
 .metric {
   display: flex;
@@ -679,6 +679,49 @@ a:hover {
   }
   .header__title {
     font-size: 1.45rem;
+  }
+}
+
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-strong);
+  cursor: pointer;
+  box-shadow: 0 6px 18px oklch(20% 0 0 / 0.18);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 60;
+}
+.to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.to-top:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.to-top:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.to-top svg {
+  width: 22px;
+  height: 22px;
+}
+@media (min-width: 721px) {
+  .to-top {
+    display: none;
   }
 }
 
