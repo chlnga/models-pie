@@ -17,7 +17,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Fetch JSON with up to 3 attempts; validate(data) must return truthy.
 async function fetchJson(url, validate) {
-  const headers = { 'User-Agent': 'which-model-ci' };
+  const headers = { 'User-Agent': 'models-pie-ci' };
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {

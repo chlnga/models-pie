@@ -88,7 +88,7 @@ export default function App() {
           <div className="header__brand">
             <span className="header__logo" aria-hidden="true" />
             <div>
-              <h1 className="header__title">Which model?</h1>
+              <h1 className="header__title">Models Pie</h1>
             </div>
           </div>
           <p className="header__data muted">

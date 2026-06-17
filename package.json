@@ -1,9 +1,13 @@
 {
-  "name": "which-model",
+  "name": "models-pie",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Find the best LLM for your fast / cheap / good priorities. Client-side only.",
+  "description": "Models Pie — find the best LLM for your fast / cheap / good priorities. Client-side only.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chlnga/models-pie.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
