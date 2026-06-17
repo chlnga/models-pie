@@ -481,11 +481,89 @@ a:hover {
   white-space: nowrap;
   position: sticky;
   top: 0;
+  /* Sticky establishes a stacking context, which would otherwise trap the
+     tooltip bubble inside it and let tbody rows paint over the bubble.
+     z-index lifts the whole th context (bubble included) above the body. */
+  z-index: 2;
   background: var(--surface);
 }
 .table thead th .dot {
   margin-right: 6px;
   vertical-align: middle;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  outline: none;
+  border-radius: 4px;
+}
+.tooltip:focus-visible {
+  box-shadow: var(--ring);
+}
+
+.tooltip__bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 30;
+  min-width: 200px;
+  max-width: 260px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--text-strong);
+  color: var(--surface);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: left;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+.tooltip__bubble::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--text-strong);
+  transform: rotate(45deg);
+}
+
+.tooltip--center .tooltip__bubble {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tooltip--center .tooltip__bubble::before {
+  left: 50%;
+  margin-left: -4px;
+}
+.tooltip--start .tooltip__bubble {
+  left: 0;
+}
+.tooltip--start .tooltip__bubble::before {
+  left: 14px;
+}
+.tooltip--end .tooltip__bubble {
+  right: 0;
+}
+.tooltip--end .tooltip__bubble::before {
+  right: 14px;
+}
+
+.tooltip:hover .tooltip__bubble,
+.tooltip:focus-visible .tooltip__bubble,
+.tooltip:focus-within .tooltip__bubble {
+  opacity: 1;
+  visibility: visible;
 }
 
 .table tbody td {
@@ -547,7 +625,7 @@ a:hover {
 }
 .tag--free { background: var(--cheap-soft); color: color-mix(in oklch, var(--cheap) 55%, var(--text-strong)); }
 .tag--open { background: var(--good-soft); color: color-mix(in oklch, var(--good) 55%, var(--text-strong)); }
-.tag--lowconf { background: color-mix(in oklch, oklch(55% 0.04 280) 16%, var(--surface)); color: color-mix(in oklch, oklch(55% 0.06 280) 55%, var(--text-strong)); cursor: help; }
+.tag--lowconf { background: color-mix(in oklch, oklch(55% 0.04 280) 16%, var(--surface)); color: color-mix(in oklch, oklch(55% 0.06 280) 55%, var(--text-strong)); }
 
 .metric {
   display: flex;

@@ -146,6 +146,7 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
         fixed: divider === 'goodCheap' ? f : g,
       };
       setActive(divider);
+      setHint(false);
     };
   }
 
@@ -192,9 +193,11 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
         e.preventDefault();
         nudge(divider, step);
+        setHint(false);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
         e.preventDefault();
         nudge(divider, -step);
+        setHint(false);
       }
     };
   }
@@ -214,8 +217,6 @@ export default function WeightPie({ weights, onWeightsChange }: WeightPieProps) 
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       role="group"
       aria-label="Priority pie. Drag the handles between slices to set the good, cheap, and fast weights."
-      onMouseEnter={() => setHint(false)}
-      onTouchStart={() => setHint(false)}
     >
       {slices.map((s) =>
         s.pct >= 99.999 ? (

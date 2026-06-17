@@ -1,6 +1,8 @@
 import ScoreBar from './ScoreBar';
+import Tooltip from './Tooltip';
 import type { QualityMetric, RankedModel, SpeedMetric } from '../types';
 import { QUALITY_LABELS, SPEED_SHORT_LABELS } from '../types';
+import { COMPOSITE_NOTE, sourcingTooltip } from '../content';
 import {
   formatBlendedCost,
   formatMatch,
@@ -71,18 +73,28 @@ export default function ResultsTable({
                 <th className="col-rank">#</th>
                 <th className="col-model">Model</th>
                 <th className="col-good">
-                  <span className="dot dot--good" aria-hidden="true" />
-                  {QUALITY_LABELS[qualityMetric]}
+                  <Tooltip text={sourcingTooltip('good')}>
+                    <span className="dot dot--good" aria-hidden="true" />
+                    {QUALITY_LABELS[qualityMetric]}
+                  </Tooltip>
                 </th>
                 <th className="col-cheap">
-                  <span className="dot dot--cheap" aria-hidden="true" />
-                  Blended $/M
+                  <Tooltip text={sourcingTooltip('cheap')}>
+                    <span className="dot dot--cheap" aria-hidden="true" />
+                    Blended $/M
+                  </Tooltip>
                 </th>
                 <th className="col-fast">
-                  <span className="dot dot--fast" aria-hidden="true" />
-                  {SPEED_SHORT_LABELS[speedMetric]}
+                  <Tooltip text={sourcingTooltip('fast')}>
+                    <span className="dot dot--fast" aria-hidden="true" />
+                    {SPEED_SHORT_LABELS[speedMetric]}
+                  </Tooltip>
                 </th>
-                <th className="col-match">Match</th>
+                <th className="col-match">
+                  <Tooltip text={COMPOSITE_NOTE} align="end">
+                    Match
+                  </Tooltip>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -109,11 +121,14 @@ export default function ResultsTable({
                         {m.sourceType?.toLowerCase().includes('open') && (
                           <span className="tag tag--open">Open weight</span>
                         )}
-                        {m.lowConfidence && (
-                          <span className="tag tag--lowconf" title={m.confidenceTag ?? undefined}>
-                            Low confidence
-                          </span>
-                        )}
+                        {m.lowConfidence &&
+                          (m.confidenceTag ? (
+                            <Tooltip text={m.confidenceTag}>
+                              <span className="tag tag--lowconf">Low confidence</span>
+                            </Tooltip>
+                          ) : (
+                            <span className="tag tag--lowconf">Low confidence</span>
+                          ))}
                       </span>
                     </div>
                   </td>
