@@ -132,6 +132,8 @@ export default function App() {
             <br />
             {datasetMeta.generatedAt &&
               `Generated ${datasetMeta.generatedAt.slice(0, 10)}`}
+              <br/>
+              <a href={"https://github.com/chlnga/models-pie"} target={"_blank"}>Github</a>
           </p>
         </div>
       </header>
