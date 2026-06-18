@@ -25,7 +25,7 @@ export function AppRoutes() {
             // render <HomePage> forces React to remount, re-running the
             // useState initializer with the new preset's weights. Without it,
             // React would preserve the prior route's weights state.
-            <HomePage key={p.path} initialWeights={p.weights} />
+            <HomePage key={p.path} preset={p} />
           }
         />
       ))}

@@ -132,6 +132,29 @@ a:hover {
   flex: 1;
 }
 
+/* Per-preset intro: the page's sole <h1> plus a short descriptive paragraph.
+   Rendered into the SSR HTML so crawlers and users see unique, keyword-
+   relevant copy per route. Kept compact so it doesn't push the interactive
+   pie below the fold. */
+.preset-intro {
+  max-width: 760px;
+}
+.preset-intro__title {
+  font-family: var(--mono);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-strong);
+  margin: 0 0 8px;
+}
+.preset-intro__text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
 .footer {
   border-top: 1px solid var(--border);
   padding: 18px 24px 32px;
@@ -789,6 +812,9 @@ a:hover {
   }
   .header__title {
     font-size: 1.45rem;
+  }
+  .preset-intro__title {
+    font-size: 1.2rem;
   }
 }
 

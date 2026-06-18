@@ -2,12 +2,15 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import WeightControls from "../components/WeightControls";
 import WeightPie from "../components/WeightPie";
 import PiePresets from "../components/PiePresets";
+import PresetIntro from "../components/PresetIntro";
 import ResultsTable from "../components/ResultsTable";
 import ScrollToTop from "../components/ScrollToTop";
 import { joinedModels, datasetMeta } from "../data";
 import { rank } from "../scoring";
 import { COMPOSITE_NOTE, SOURCING } from "../content";
-import { DEFAULT_WEIGHTS } from "../presets";
+import { PRESETS, resolveSeo } from "../presets";
+import type { Preset } from "../presets";
+import { useSeoMeta } from "../hooks/useSeoMeta";
 import type { QualityMetric, SpeedMetric, Weights } from "../types";
 
 // useLayoutEffect fires synchronously before paint on the client; on the server
@@ -17,16 +20,24 @@ const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 interface HomePageProps {
-  /** Initial weight distribution; defaults to the Balanced preset. Per-route
-   *  callers pass their preset's weights so the page loads preconfigured. */
-  initialWeights?: Weights;
+  /** Active preset — drives the initial weight distribution, the visible
+   *  intro copy, and the document <head> metadata. Defaults to the Balanced
+   *  landing preset. Per-route callers pass their preset so the page loads
+   *  preconfigured and SEO-tagged for that route. */
+  preset?: Preset;
 }
 
-export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageProps) {
+export default function HomePage({ preset = PRESETS[0] }: HomePageProps) {
+  const initialWeights = preset.weights;
   const [weights, setWeights] = useState<Weights>(initialWeights);
   const [qualityMetric, setQualityMetric] = useState<QualityMetric>("overall");
   const [speedMetric, setSpeedMetric] = useState<SpeedMetric>("blend");
   const [query, setQuery] = useState("");
+
+  // Sync <title> / meta / canonical / OG tags on client-side route changes.
+  // At build time the prerender script bakes these into each route's HTML;
+  // this covers navigations between preset chips where no page load occurs.
+  useSeoMeta(resolveSeo(preset));
 
   const panelRef = useRef<HTMLDivElement>(null);
   const pieWrapRef = useRef<HTMLDivElement>(null);
@@ -99,7 +110,9 @@ export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageP
           <div className="header__brand">
             <span className="header__logo" aria-hidden="true" />
             <div>
-              <h1 className="header__title">Models Pie</h1>
+              {/* <p> not <h1>: each page’s real <h1> lives in <PresetIntro>
+                  below, keeping one descriptive top-level heading per route. */}
+              <p className="header__title">Models Pie</p>
             </div>
           </div>
           <p className="header__data muted">
@@ -149,6 +162,7 @@ export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageP
       </header>
 
       <main className="container">
+        <PresetIntro seo={preset.seo} />
         <div ref={panelRef}>
           <WeightControls>
             <div
