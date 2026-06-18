@@ -11,7 +11,7 @@
   "homepage": "https://modelspie.com",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server --mode ssg-server && node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "fetch:data": "node scripts/fetch-data.mjs",
@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.18.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
