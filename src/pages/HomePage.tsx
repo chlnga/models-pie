@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import WeightControls from "../components/WeightControls";
 import WeightPie from "../components/WeightPie";
 import PiePresets from "../components/PiePresets";
-import MetricSelectors from "../components/MetricSelectors";
 import ResultsTable from "../components/ResultsTable";
 import ScrollToTop from "../components/ScrollToTop";
 import { joinedModels, datasetMeta } from "../data";
@@ -161,12 +160,6 @@ export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageP
             </div>
           </WeightControls>
         </div>
-        <MetricSelectors
-          qualityMetric={qualityMetric}
-          speedMetric={speedMetric}
-          onQualityChange={setQualityMetric}
-          onSpeedChange={setSpeedMetric}
-        />
         <ResultsTable
           ranked={filtered}
           visibleCount={filtered.length}
@@ -177,6 +170,8 @@ export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageP
           weights={weights}
           query={query}
           onQueryChange={setQuery}
+          onQualityChange={setQualityMetric}
+          onSpeedChange={setSpeedMetric}
         />
       </main>
 

@@ -344,48 +344,6 @@ a:hover {
   box-shadow: var(--ring);
 }
 
-.selectors {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.selector__label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-strong);
-}
-
-.selector__select {
-  font-family: var(--font);
-  font-size: 0.95rem;
-  color: var(--text-strong);
-  background: var(--surface-2);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-}
-.selector__select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--ring);
-}
-
 .dot {
   display: inline-block;
   width: 9px;
@@ -492,6 +450,43 @@ a:hover {
 .table thead th .dot {
   margin-right: 6px;
   vertical-align: middle;
+}
+
+/* Column-header dropdowns (good / fast metric selectors). The <select> sits
+   next to a hoverable dot so the sourcing tooltip stays accessible. */
+.th-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.th-head .tooltip {
+  /* Re-center the tooltip bubble on the dot rather than the whole header. */
+  cursor: help;
+}
+.th-select {
+  /* Reset the inherited <th> uppercase mono treatment so the dropdown reads
+     as a normal control, not a column label. */
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 4px 26px 4px 8px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23666' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  max-width: 100%;
+}
+.th-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
 }
 
 .tooltip {
@@ -706,8 +701,8 @@ a:hover {
 }
 
 @media (max-width: 860px) {
-  .selectors {
-    grid-template-columns: 1fr;
+  .th-select {
+    font-size: 0.7rem;
   }
 }
 

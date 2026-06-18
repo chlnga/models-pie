@@ -1,7 +1,12 @@
 import ScoreBar from './ScoreBar';
 import Tooltip from './Tooltip';
 import type { QualityMetric, RankedModel, SpeedMetric } from '../types';
-import { QUALITY_LABELS, SPEED_SHORT_LABELS } from '../types';
+import {
+  QUALITY_LABELS,
+  QUALITY_OPTIONS,
+  SPEED_OPTIONS,
+  SPEED_SHORT_LABELS,
+} from '../types';
 import { COMPOSITE_NOTE, sourcingTooltip } from '../content';
 import {
   formatBlendedCost,
@@ -19,6 +24,8 @@ interface ResultsTableProps {
   weights: { good: number; cheap: number; fast: number };
   query: string;
   onQueryChange: (query: string) => void;
+  onQualityChange: (metric: QualityMetric) => void;
+  onSpeedChange: (metric: SpeedMetric) => void;
 }
 
 export default function ResultsTable({
@@ -31,6 +38,8 @@ export default function ResultsTable({
   weights,
   query,
   onQueryChange,
+  onQualityChange,
+  onSpeedChange,
 }: ResultsTableProps) {
   return (
     <section className="panel results">
@@ -71,10 +80,23 @@ export default function ResultsTable({
                 <th className="col-rank">#</th>
                 <th className="col-model">Model</th>
                 <th className="col-good">
-                  <Tooltip text={sourcingTooltip('good')}>
-                    <span className="dot dot--good" aria-hidden="true" />
-                    {QUALITY_LABELS[qualityMetric]}
-                  </Tooltip>
+                  <span className="th-head">
+                    <Tooltip text={sourcingTooltip('good')}>
+                      <span className="dot dot--good" aria-hidden="true" />
+                    </Tooltip>
+                    <select
+                      className="th-select"
+                      value={qualityMetric}
+                      onChange={(e) => onQualityChange(e.target.value as QualityMetric)}
+                      aria-label="Measure “good” by"
+                    >
+                      {QUALITY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
                 </th>
                 <th className="col-cheap">
                   <Tooltip text={sourcingTooltip('cheap')}>
@@ -83,10 +105,23 @@ export default function ResultsTable({
                   </Tooltip>
                 </th>
                 <th className="col-fast">
-                  <Tooltip text={sourcingTooltip('fast')}>
-                    <span className="dot dot--fast" aria-hidden="true" />
-                    {SPEED_SHORT_LABELS[speedMetric]}
-                  </Tooltip>
+                  <span className="th-head">
+                    <Tooltip text={sourcingTooltip('fast')}>
+                      <span className="dot dot--fast" aria-hidden="true" />
+                    </Tooltip>
+                    <select
+                      className="th-select"
+                      value={speedMetric}
+                      onChange={(e) => onSpeedChange(e.target.value as SpeedMetric)}
+                      aria-label="Measure “fast” by"
+                    >
+                      {SPEED_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {SPEED_SHORT_LABELS[opt.value]}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
                 </th>
                 <th className="col-match">
                   <Tooltip text={COMPOSITE_NOTE} align="end">
