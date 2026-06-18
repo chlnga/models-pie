@@ -8,6 +8,7 @@ import ScrollToTop from "../components/ScrollToTop";
 import { joinedModels, datasetMeta } from "../data";
 import { rank } from "../scoring";
 import { COMPOSITE_NOTE, SOURCING } from "../content";
+import { DEFAULT_WEIGHTS } from "../presets";
 import type { QualityMetric, SpeedMetric, Weights } from "../types";
 
 // useLayoutEffect fires synchronously before paint on the client; on the server
@@ -16,10 +17,14 @@ import type { QualityMetric, SpeedMetric, Weights } from "../types";
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-const DEFAULT_WEIGHTS: Weights = { good: 33.33, cheap: 33.33, fast: 33.34 };
+interface HomePageProps {
+  /** Initial weight distribution; defaults to the Balanced preset. Per-route
+   *  callers pass their preset's weights so the page loads preconfigured. */
+  initialWeights?: Weights;
+}
 
-export default function HomePage() {
-  const [weights, setWeights] = useState<Weights>(DEFAULT_WEIGHTS);
+export default function HomePage({ initialWeights = DEFAULT_WEIGHTS }: HomePageProps) {
+  const [weights, setWeights] = useState<Weights>(initialWeights);
   const [qualityMetric, setQualityMetric] = useState<QualityMetric>("overall");
   const [speedMetric, setSpeedMetric] = useState<SpeedMetric>("blend");
   const [query, setQuery] = useState("");
@@ -152,7 +157,7 @@ export default function HomePage() {
               className={`pie-wrap${docked ? " is-docked" : ""}`}
             >
               <WeightPie weights={weights} onWeightsChange={setWeights} />
-              <PiePresets weights={weights} onSelect={setWeights} />
+              <PiePresets weights={weights} />
             </div>
           </WeightControls>
         </div>
