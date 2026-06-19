@@ -53,7 +53,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Best value',
-    path: '/best-value',
+    path: '/best-value/',
     weights: { good: 50, cheap: 50, fast: 0 },
     seo: {
       title: 'Best Value AI Models · Quality per Dollar | Models Pie',
@@ -66,7 +66,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Fast & cheap',
-    path: '/fast-and-cheap',
+    path: '/fast-and-cheap/',
     weights: { good: 0, cheap: 50, fast: 50 },
     seo: {
       title: 'Fast & Cheap AI Models · Low Latency, Low Cost | Models Pie',
@@ -79,7 +79,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Highest quality',
-    path: '/highest-quality',
+    path: '/highest-quality/',
     weights: { good: 100, cheap: 0, fast: 0 },
     seo: {
       title: 'Highest Quality AI Models · Best LLMs Ranked | Models Pie',
@@ -92,7 +92,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Fastest',
-    path: '/fastest',
+    path: '/fastest/',
     weights: { good: 0, cheap: 0, fast: 100 },
     seo: {
       title: 'Fastest AI Models · Lowest Latency & Highest Throughput | Models Pie',
@@ -105,7 +105,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Cheapest',
-    path: '/cheapest',
+    path: '/cheapest/',
     weights: { good: 0, cheap: 100, fast: 0 },
     seo: {
       title: 'Cheapest AI Models · Lowest Cost per Million Tokens | Models Pie',
@@ -118,7 +118,7 @@ export const PRESETS: Preset[] = [
   },
   {
     label: 'Fast & good',
-    path: '/fast-and-good',
+    path: '/fast-and-good/',
     weights: { good: 50, cheap: 0, fast: 50 },
     seo: {
       title: 'Fast & High-Quality AI Models · Speed Plus Capability | Models Pie',
@@ -143,14 +143,15 @@ export interface ResolvedSeo extends PresetSeo {
  *  Used by both the prerender script (build-time head injection) and the
  *  useSeoMeta hook (client-side head sync on route change).
  *
- *  `path` stays slash-less (react-router routes/Links/matchesPreset all key off
- *  the bare path). Only the canonical `url` carries the trailing slash for
- *  non-home routes, so the canonical/og:url matches the URL Cloudflare Pages
- *  actually serves: Pages 301-redirects `/best-value` → `/best-value/` when
- *  serving a directory index, so the canonical must agree on the slashed form. */
+ *  `path` already carries a trailing slash for non-home routes (and is `/` for
+ *  home), so the canonical `url` is simply `SITE_ORIGIN + path`. This keeps the
+ *  canonical/og:url, the <Link> targets, and the URL Cloudflare actually serves
+ *  (Workers Static Assets `auto-trailing-slash` serves `/best-value/`) all on
+ *  the same slashed form. react-router matches both forms — compilePath strips
+ *  the trailing slash and appends `\/*$` — so slashed routes/links match both
+ *  `/best-value` and `/best-value/`. */
 export function resolveSeo(preset: Preset): ResolvedSeo {
-  const canonicalPath = preset.path === '/' ? '/' : `${preset.path}/`;
-  return { ...preset.seo, path: preset.path, url: `${SITE_ORIGIN}${canonicalPath}` };
+  return { ...preset.seo, path: preset.path, url: `${SITE_ORIGIN}${preset.path}` };
 }
 
 /** Path-based lookup for the prerender script, which iterates ROUTE_PATHS. */
