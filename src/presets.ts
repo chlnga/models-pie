@@ -141,9 +141,16 @@ export interface ResolvedSeo extends PresetSeo {
 
 /** Resolve a preset’s full SEO metadata including the absolute canonical URL.
  *  Used by both the prerender script (build-time head injection) and the
- *  useSeoMeta hook (client-side head sync on route change). */
+ *  useSeoMeta hook (client-side head sync on route change).
+ *
+ *  `path` stays slash-less (react-router routes/Links/matchesPreset all key off
+ *  the bare path). Only the canonical `url` carries the trailing slash for
+ *  non-home routes, so the canonical/og:url matches the URL Cloudflare Pages
+ *  actually serves: Pages 301-redirects `/best-value` → `/best-value/` when
+ *  serving a directory index, so the canonical must agree on the slashed form. */
 export function resolveSeo(preset: Preset): ResolvedSeo {
-  return { ...preset.seo, path: preset.path, url: `${SITE_ORIGIN}${preset.path}` };
+  const canonicalPath = preset.path === '/' ? '/' : `${preset.path}/`;
+  return { ...preset.seo, path: preset.path, url: `${SITE_ORIGIN}${canonicalPath}` };
 }
 
 /** Path-based lookup for the prerender script, which iterates ROUTE_PATHS. */

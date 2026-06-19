@@ -76,6 +76,49 @@ for (const path of ROUTE_PATHS) {
   );
 }
 
+// --- sitemap.xml: every route, trailing-slash canonical URLs. Generated from
+// PRESETS so it can never drift from the route table — the static
+// public/sitemap.xml was removed because it only listed `/` and had already
+// fallen out of sync once.
+const sitemap =
+  `<?xml version="1.0" encoding="UTF-8"?>\n` +
+  `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+  ROUTE_PATHS.map(
+    (p) => `  <url><loc>${escapeHtml(resolveSeoForPath(p).url)}</loc></url>`,
+  ).join("\n") +
+  `\n</urlset>\n`;
+writeFileSync(join(outDir, "sitemap.xml"), sitemap);
+console.log(`[prerender] sitemap.xml (${ROUTE_PATHS.length} urls)`);
+
+// --- 404.html: static fallback so Cloudflare Pages returns a real 404 instead
+// of slipping into SPA mode (which serves `/` with a 200 for any unknown path
+// → soft-404s). The main bundle <script> is stripped so client-side React
+// doesn't mount, match no route, and wipe this static content; the CSS <link>
+// stays, so the page reuses the site's .container/.preset-intro styles. A
+// noindex robots meta keeps the error page out of the index.
+const notFoundSeo = {
+  title: "Page not found · Models Pie",
+  description:
+    "This page doesn't exist on Models Pie. Return to the home page to compare AI models by quality, speed, and price.",
+  url: resolveSeoForPath("/").url,
+};
+const notFoundBody =
+  `<main class="container"><section class="preset-intro">` +
+  `<h1 class="preset-intro__title">Page not found</h1>` +
+  `<p class="preset-intro__text">This page doesn't exist. ` +
+  `<a href="/">Return to Models Pie</a> to compare AI models.</p>` +
+  `</section></main>`;
+const notFoundHtml = applyHeadTags(
+  template.replace(ROOT_PLACEHOLDER, `<div id="root">${notFoundBody}</div>`),
+  notFoundSeo,
+)
+  // Strip the React entry script so the static 404 body survives client-side.
+  .replace(/<script[^>]*src="\/assets\/index-[^"]*\.js"[^>]*><\/script>\s*/, "")
+  // Keep the error page out of search results.
+  .replace("</head>", `<meta name="robots" content="noindex">\n</head>`);
+writeFileSync(join(outDir, "404.html"), notFoundHtml);
+console.log(`[prerender] 404.html (${notFoundHtml.length} bytes)`);
+
 console.log(`[prerender] done: ${ROUTE_PATHS.length} route(s)`);
 
 // dist/server/ is build-time-only — entry-server.js exists to feed this script,
