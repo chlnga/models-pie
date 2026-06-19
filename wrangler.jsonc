@@ -1,0 +1,17 @@
+{
+  "name": "models-pie",
+  "compatibility_date": "2026-06-19",
+  // Workers Static Assets — serve the pre-built `dist/` as static files.
+  // There is no `main` Worker entry, so `wrangler deploy` uploads `dist/`
+  // as-is WITHOUT running the Cloudflare Vite plugin (which would re-run the
+  // build and emit a hashed SSR bundle that breaks scripts/prerender.mjs).
+  // See https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation
+  "assets": {
+    "directory": "./dist/",
+    // Folder-index routes (e.g. dist/best-value/index.html) are served at
+    // /best-value/ (trailing slash), matching our canonical URLs.
+    "html_handling": "auto-trailing-slash",
+    // Unmatched paths serve dist/404.html with a 404 status (no SPA fallback).
+    "not_found_handling": "404-page"
+  }
+}

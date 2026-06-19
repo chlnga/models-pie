@@ -1,17 +1,20 @@
-name: Deploy to Cloudflare R2
+name: Deploy to Cloudflare
 
+# This workflow is for the SCHEDULED redeploy only (refreshes the fetched
+# model data every 6 hours). Push-to-main deploys are handled by Cloudflare's
+# native Git integration, so `push` is intentionally NOT a trigger here
+# (avoids double-deploys). Run manually via the Actions tab if needed.
 on:
   schedule:
-    - cron: '0 6 * * *'
+    # Every 6 hours at minute 0 — 00:00, 06:00, 12:00, 18:00 UTC.
+    - cron: '0 */6 * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-r2
+  group: deploy-cloudflare
   cancel-in-progress: true
 
 jobs:
@@ -22,23 +25,26 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
+
+      - run: npm ci
 
       - name: Fetch and compile data
         run: npm run setup
-
-      - run: npm ci
 
       - name: Build
         env:
           BASE_PATH: /
         run: npm run build
 
-      - name: Sync to R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_REGION: auto
-          AWS_ENDPOINT_URL_S3: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
-        run: aws s3 sync dist/ s3://${{ secrets.R2_BUCKET_NAME }}/ --delete
+      # Reads ./wrangler.jsonc and uploads the pre-built dist/ as static
+      # assets (no Worker script, no rebuild). Requires repo secrets:
+      #   CLOUDFLARE_API_TOKEN  — token with "Workers Scripts: Edit"
+      #   CLOUDFLARE_ACCOUNT_ID — your Cloudflare account ID
+      - name: Deploy via wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
