@@ -8,7 +8,9 @@ on:
   schedule:
     # Every 6 hours at minute 0 — 00:00, 06:00, 12:00, 18:00 UTC.
     - cron: '0 */6 * * *'
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -21,9 +23,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -43,7 +45,7 @@ jobs:
       #   CLOUDFLARE_API_TOKEN  — token with "Workers Scripts: Edit"
       #   CLOUDFLARE_ACCOUNT_ID — your Cloudflare account ID
       - name: Deploy via wrangler
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
