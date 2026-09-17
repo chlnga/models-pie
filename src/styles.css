@@ -440,14 +440,14 @@ a:hover {
 }
 
 .table-wrap {
-  overflow-x: auto;
   margin: 0 -8px;
   padding: 0 8px;
 }
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
 }
 
@@ -744,10 +744,6 @@ a:hover {
   .results__search {
     width: 100%;
     max-width: none;
-  }
-
-  .table-wrap {
-    overflow: visible;
   }
 
   .table, .table tbody, .table tr, .table td {
